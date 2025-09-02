@@ -30,15 +30,9 @@ app.use("/assets", express.static(path.join(__dirname, "assets"), {
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(session({
-    secret: process.env.SESSION_SECRET || "secret",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        // In Vercel production, don't force secure cookies as it handles HTTPS already
-        secure: false,
-        httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000 // 24 hours
-    }
+	secret: "secret",
+	resave: true,
+	saveUninitialized: true
 }));
 app.use(passport.initialize());
 app.use(passport.session());
