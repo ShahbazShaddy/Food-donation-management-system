@@ -1,0 +1,373 @@
+<main class="admin-agents">
+  <%- include('../partials/adminSidebar') %>
+
+  <div id="main-wrapper">
+    <div class="top-bar bg-white shadow-sm d-flex align-items-center justify-content-between px-3 py-2">
+      <div class="d-flex align-items-center gap-3">
+        <button id="sidebar-toggler-btn" class="btn btn-outline-primary btn-sm"><i class="fas fa-bars"></i></button>
+        <h5 class="m-0 fw-semibold text-primary">Agents</h5>
+      </div>
+      <div class="d-flex gap-2">
+        <div class="input-group input-group-sm search-box">
+          <span class="input-group-text bg-white"><i class="fas fa-search text-secondary"></i></span>
+          <input id="agentSearch" type="text" class="form-control" placeholder="Search name / email / phone">
+          <button class="btn btn-outline-secondary" id="clearAgentSearch" type="button"><i class="fas fa-times"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="container-fluid py-4">
+      <div class="panel">
+        <div class="panel-head d-flex flex-wrap gap-2 align-items-center">
+          <h6 class="m-0 fw-semibold"><i class="fas fa-users me-2 text-primary"></i>Registered Agents</h6>
+          <div class="small ms-auto text-muted">
+            Showing <span id="visibleAgents"><%= agents.length %></span> of <%= agents.length %>
+          </div>
+        </div>
+        <div class="panel-body p-0">
+          <div class="table-responsive">
+            <table class="table align-middle table-hover table-agents mb-0">
+              <thead>
+                <tr>
+                  <th data-sort="index" class="sortable">#</th>
+                  <th data-sort="name" class="sortable">Agent</th>
+                  <th data-sort="email" class="sortable">Email</th>
+                  <th data-sort="phone" class="sortable">Phone</th>
+                  <th data-sort="joined" class="sortable">Joined</th>
+                  <th>Feedback</th>
+                  <th style="width:120px" class="text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="agentTableBody">
+              <% for(let i=0; i<agents.length; i++) { const a = agents[i]; %>
+                <tr data-row
+                    data-name="<%= (a.firstName + ' ' + a.lastName).toLowerCase() %>"
+                    data-email="<%= a.email.toLowerCase() %>"
+                    data-phone="<%= (a.phone||'').toString().toLowerCase() %>"
+                    data-joined="<%= a.joinedTime.getTime() %>">
+                  <td class="text-muted fw-semibold"><%= i+1 %></td>
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="avatar-sm">
+                        <span><%= a.firstName[0].toUpperCase() %></span>
+                      </div>
+                      <div class="lh-1">
+                        <div class="fw-semibold agent-name"><%= a.firstName %> <%= a.lastName %></div>
+                        <small class="text-muted"><%= a.role %></small>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="small"><%= a.email %></td>
+                  <td class="small"><%= a.phone %></td>
+                  <td class="small"><%= a.joinedTime.toLocaleString("en-IN",{ dateStyle:"medium", timeStyle:"short"}) %></td>
+                  <td class="agent-rating" data-agent-id="<%= a._id %>">
+                    <div class="d-flex align-items-center">
+                      <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                      <span class="small">Loading...</span>
+                    </div>
+                  </td>
+                  <td class="text-center">
+                    <button class="btn btn-sm btn-outline-primary view-feedback-btn"
+                            data-agent-id="<%= a._id %>"
+                            data-agent-name="<%= a.firstName + ' ' + a.lastName %>">
+                      <i class="fas fa-comment-dots"></i>
+                    </button>
+                    <!-- <a href="/admin/agents?focus=<%= a._id %>" class="btn btn-sm btn-outline-secondary" title="Focus">
+                      <i class="fas fa-bullseye"></i>
+                    </a> -->
+                  </td>
+                </tr>
+              <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- Feedback Modal (unchanged logic) -->
+<div class="modal fade" id="feedbackModal" tabindex="-1" aria-labelledby="feedbackModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-semibold" id="feedbackModalLabel">Feedback</h5>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-2">
+        <div class="row g-3">
+          <div class="col-12 col-md-4">
+            <div class="metric-card">
+              <div class="metric-label">Average</div>
+              <div class="metric-value" id="avgRating">0.0</div>
+              <div class="progress mt-2" style="height:6px;">
+                <div class="progress-bar bg-warning" id="avgRatingBar" style="width:0%"></div>
+              </div>
+            </div>
+            <div class="breakdown mt-3" id="ratingBreakdown"></div>
+          </div>
+          <div class="col-12 col-md-8">
+            <div id="feedbackComments" class="feedback-comments">
+              <div class="text-center text-muted py-5" id="noFeedbackMsg">
+                <i class="fas fa-comment-slash fa-2x mb-3"></i><br>No feedback yet
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.admin-agents { background:#f3f6fb; min-height:100vh; }
+.top-bar { position:sticky; top:0; z-index:10; }
+.panel { background:#fff; border:1px solid #e5eaf1; border-radius:1rem; box-shadow:0 6px 18px -8px rgba(0,0,0,.08); }
+.panel-head { padding:.85rem 1.1rem; border-bottom:1px solid #eef2f6; background:linear-gradient(90deg,#f8fafc,#f1f5f9); }
+.table-agents thead th { font-size:.65rem; text-transform:uppercase; letter-spacing:.7px; font-weight:600; background:#f1f5f9; }
+.table-agents tbody tr { transition:background .25s; }
+.table-agents tbody tr:hover { background:#f5faff; }
+.avatar-sm { width:40px; height:40px; border-radius:12px; background:linear-gradient(135deg,#6366f1,#4f46e5); color:#fff; font-weight:700; display:flex; align-items:center; justify-content:center; font-size:.9rem; box-shadow:0 0 0 3px rgba(255,255,255,.6),0 .4rem .9rem -0.4rem rgba(0,0,0,.3); }
+.metric-card { background:#fff; border:1px solid #e5eaf1; border-radius:.9rem; padding:.9rem .95rem; box-shadow:0 4px 12px -6px rgba(0,0,0,.08); }
+.metric-label { font-size:.65rem; text-transform:uppercase; letter-spacing:.7px; font-weight:600; color:#64748b; }
+.metric-value { font-size:2.2rem; font-weight:700; line-height:1.1; color:#111827; }
+.breakdown .row-line { display:flex; align-items:center; gap:.5rem; font-size:.7rem; margin-bottom:.3rem; }
+.breakdown .bar { flex:1; height:6px; background:#e5eaf1; border-radius:4px; overflow:hidden; }
+.breakdown .bar > div { height:100%; background:#f59e0b; }
+.feedback-comments .card { border:1px solid #e5eaf1; }
+.search-box { box-shadow:0 4px 12px -6px rgba(0,0,0,.15); border-radius:.6rem; overflow:hidden; }
+.sortable { cursor:pointer; position:relative; }
+.sortable:after { content:"\f0dc"; font-family:"Font Awesome 6 Free"; font-weight:900; font-size:.55rem; opacity:.4; margin-left:.35rem; }
+.sortable.sorted-asc:after { content:"\f160"; opacity:.85; }
+.sortable.sorted-desc:after { content:"\f161"; opacity:.85; }
+.rating-bar { height:6px; background:#e5eaf1; border-radius:4px; overflow:hidden; }
+.rating-bar-fill { height:100%; background:#fbbf24; }
+.star-rating { color:#f59e0b; }
+.star-empty { color:#cbd5e1; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  // Search
+  const search = document.getElementById('agentSearch');
+  const clearBtn = document.getElementById('clearAgentSearch');
+  const rows = [...document.querySelectorAll('#agentTableBody tr[data-row]')];
+  const visibleEl = document.getElementById('visibleAgents');
+  function filterAgents(){
+    const q=(search.value||'').trim().toLowerCase();
+    let vis=0;
+    rows.forEach(r=>{
+      const hay = r.dataset.name + ' ' + r.dataset.email + ' ' + r.dataset.phone;
+      if(!q || hay.includes(q)){
+        r.style.display=''; vis++;
+      } else r.style.display='none';
+    });
+    if(visibleEl) visibleEl.textContent=vis;
+  }
+  if(search){ search.addEventListener('input', filterAgents); }
+  if(clearBtn){ clearBtn.addEventListener('click', ()=>{ search.value=''; filterAgents(); search.focus(); }); }
+
+  document.querySelectorAll('.agent-rating').forEach(cell => {
+    const agentId = cell.getAttribute('data-agent-id');
+    if (agentId) {
+      loadAgentRatingSummary(agentId, cell);
+    }
+  });
+  
+  // 2. Setup feedback modal
+  const feedbackModal = new bootstrap.Modal(document.getElementById('feedbackModal'));
+  
+  // 3. Handle feedback button clicks
+  document.querySelectorAll('.view-feedback-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const agentId = this.getAttribute('data-agent-id');
+      const agentName = this.getAttribute('data-agent-name');
+      
+      // Update modal title with agent name
+      document.getElementById('feedbackModalLabel').textContent = `Feedback for ${agentName}`;
+      
+      // Show loading state in modal
+      document.getElementById('feedbackComments').innerHTML = `
+        <div class="text-center p-4">
+          <div class="spinner-border text-primary" role="status"></div>
+          <p class="mt-2">Loading feedback...</p>
+        </div>
+      `;
+      
+      // Show the modal
+      feedbackModal.show();
+      
+      // Load detailed feedback
+      loadAgentFeedback(agentId);
+    });
+  });
+
+  // Function to load summary rating for table cell
+  function loadAgentRatingSummary(agentId, cell) {
+    fetch(`/admin/agents/${agentId}/feedback`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.success) {
+          const avgRating = parseFloat(data.stats.avgRating);
+          const totalFeedback = data.stats.total;
+          
+          // Create star display
+          let starsHtml = '';
+          if (totalFeedback > 0) {
+            const fullStars = Math.floor(avgRating);
+            const halfStar = avgRating - fullStars >= 0.5;
+            
+            for (let i = 1; i <= 5; i++) {
+              if (i <= fullStars) {
+                starsHtml += '<i class="fas fa-star star-rating"></i>';
+              } else if (i === fullStars + 1 && halfStar) {
+                starsHtml += '<i class="fas fa-star-half-alt star-rating"></i>';
+              } else {
+                starsHtml += '<i class="far fa-star star-empty"></i>';
+              }
+            }
+            
+            cell.innerHTML = `
+              <div>
+                <div class="mb-1">${starsHtml} <span class="ms-1 fw-bold">${avgRating}</span></div>
+                <small class="text-muted">${totalFeedback} review${totalFeedback !== 1 ? 's' : ''}</small>
+              </div>
+            `;
+          } else {
+            cell.innerHTML = '<span class="text-muted">No reviews yet</span>';
+          }
+        } else {
+          cell.innerHTML = '<span class="text-muted">No data</span>';
+        }
+      })
+      .catch(error => {
+        console.error('Error loading agent rating:', error);
+        cell.innerHTML = '<span class="text-danger">Error loading</span>';
+      });
+  }
+
+  // Function to load detailed feedback for modal
+  function loadAgentFeedback(agentId) {
+    fetch(`/admin/agents/${agentId}/feedback`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.success) {
+          // Update average rating
+          const avgRating = document.getElementById('avgRating');
+          const avgRatingBar = document.getElementById('avgRatingBar');
+          
+          avgRating.textContent = data.stats.avgRating;
+          avgRatingBar.style.width = (data.stats.avgRating / 5 * 100) + '%';
+          
+          // Update rating breakdown
+          const breakdownContainer = document.getElementById('ratingBreakdown');
+          breakdownContainer.innerHTML = '';
+          
+          for (let i = 5; i >= 1; i--) {
+            const count = data.stats.ratingCounts[i] || 0;
+            const percentage = data.stats.total > 0 ? (count / data.stats.total * 100) : 0;
+            
+            const row = document.createElement('div');
+            row.className = 'row-line';
+            row.innerHTML = `
+              <span>${i} <i class="fas fa-star text-warning"></i></span>
+              <div class="bar">
+                <div style="width: ${percentage}%"></div>
+              </div>
+              <span>${count}</span>
+            `;
+            
+            breakdownContainer.appendChild(row);
+          }
+          
+          // Update feedback comments
+          const commentsContainer = document.getElementById('feedbackComments');
+          const noFeedbackMsg = document.getElementById('noFeedbackMsg');
+          
+          if (data.feedback && data.feedback.length > 0) {
+            commentsContainer.innerHTML = '';
+            
+            data.feedback.forEach(item => {
+              const date = new Date(item.date).toLocaleDateString();
+              const card = document.createElement('div');
+              card.className = 'card mb-2';
+              card.innerHTML = `
+                <div class="card-body p-3">
+                  <div class="d-flex justify-content-between mb-1">
+                    <div>
+                      <span class="fw-bold">${item.donor}</span>
+                      <span class="text-warning ms-2">
+                        ${Array(item.rating).fill('<i class="fas fa-star"></i>').join('')}
+                        ${Array(5-item.rating).fill('<i class="far fa-star"></i>').join('')}
+                      </span>
+                    </div>
+                    <small class="text-muted">${date}</small>
+                  </div>
+                  <p class="mb-0 small">${item.comment || '<span class="text-muted"><i>No comment provided</i></span>'}</p>
+                </div>
+              `;
+              
+              commentsContainer.appendChild(card);
+            });
+          } else {
+            commentsContainer.innerHTML = `
+              <div class="text-center text-muted py-5">
+                <i class="fas fa-comment-slash fa-2x mb-3"></i>
+                <p>No feedback available yet for this agent</p>
+              </div>
+            `;
+          }
+        } else {
+          document.getElementById('feedbackComments').innerHTML = `
+            <div class="alert alert-info">No feedback data available</div>
+          `;
+        }
+      })
+      .catch(error => {
+        console.error('Error loading agent feedback:', error);
+        document.getElementById('feedbackComments').innerHTML = 
+          '<div class="alert alert-danger">Error loading feedback. Please try again.</div>';
+      });
+  }
+  // Sorting
+  document.querySelectorAll('.table-agents thead th.sortable').forEach(th=>{
+    th.addEventListener('click', ()=>{
+      const key = th.dataset.sort;
+      const current = th.classList.contains('sorted-asc') ? 'asc' : th.classList.contains('sorted-desc') ? 'desc' : '';
+      document.querySelectorAll('.table-agents thead th.sortable').forEach(h=>h.classList.remove('sorted-asc','sorted-desc'));
+      const dir = current === 'asc' ? 'desc' : 'asc';
+      th.classList.add(dir==='asc'?'sorted-asc':'sorted-desc');
+      const mult = dir==='asc'?1:-1;
+      const getVal = tr=>{
+        if(key==='index') return parseInt(tr.querySelector('td,th').textContent)||0;
+        if(key==='name') return tr.dataset.name;
+        if(key==='email') return tr.dataset.email;
+        if(key==='phone') return tr.dataset.phone;
+        if(key==='joined') return parseInt(tr.dataset.joined)||0;
+        return '';
+      };
+      rows.sort((a,b)=>{
+        const va=getVal(a), vb=getVal(b);
+        if(va<vb) return -1*mult;
+        if(va>vb) return 1*mult;
+        return 0;
+      }).forEach(r=>r.parentNode.appendChild(r));
+    });
+  });
+});
+</script>

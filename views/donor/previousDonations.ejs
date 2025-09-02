@@ -1,0 +1,258 @@
+<main class="previous-page">
+  <%- include('../partials/donorSidebar') %>
+
+  <div id="main-wrapper">
+    <div class="glass-bar d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+      <div class="d-flex align-items-center gap-3">
+        <button id="sidebar-toggler-btn" class="btn btn-icon btn-outline-light border-0 shadow-sm" aria-label="Toggle sidebar">
+          <i class="fas fa-bars"></i>
+        </button>
+        <h5 class="m-0 fw-bold text-white">Previous Donations</h5>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="/donor/donate" class="btn btn-accent btn-sm fw-semibold"><i class="fas fa-plus me-1"></i>New</a>
+        <button id="exportCSV" class="btn btn-outline-light btn-sm fw-semibold"><i class="fas fa-file-export me-1"></i>Export</button>
+      </div>
+    </div>
+
+    <div class="panel mx-3 mb-4">
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        <input id="searchBox" type="text" class="form-control form-control-sm" placeholder="Search food / agent / status">
+        <select id="statusFilter" class="form-select form-select-sm" style="max-width:160px;">
+          <option value="">All Status</option>
+          <option>pending</option>
+          <option>accepted</option>
+          <option>assigned</option>
+          <option>collected</option>
+          <option>rejected</option>
+        </select>
+        <div class="ms-auto small text-muted">
+          Total: <%= previousDonations.length %>
+        </div>
+      </div>
+
+      <div class="table-responsive donation-table-wrapper">
+        <table class="table table-sm align-middle table-hover mb-0" id="donationsTable">
+          <thead class="table-light sticky-top shadow-sm">
+            <tr class="small text-uppercase">
+              <th>#</th>
+              <th>Food</th>
+              <th>Qty</th>
+              <th>Status</th>
+              <th>Cooked</th>
+              <th>Agent</th>
+              <th>Collected</th>
+            </tr>
+          </thead>
+          <tbody class="small">
+			<% for(let i=0;i<previousDonations.length;i++){ const d=previousDonations[i]; %>
+				<tr data-row
+					data-status="<%= d.status %>"
+					data-food="<%= d.foodType.toLowerCase() %>"
+					data-agent="<%= (d.agent.firstName + ' ' + d.agent.lastName).toLowerCase() %>">
+				<td><%= i+1 %></td>
+				<td class="fw-semibold"><%= d.foodType %></td>
+				<td><%= d.quantity %></td>
+				<td>
+					<span class="badge status-badge <%= d.status %>"><%= d.status %></span>
+				</td>
+				<td><%= d.cookingTime.toLocaleString("en-IN",{ dateStyle:"medium", timeStyle:"short"}) %></td>
+				<td><%= d.agent.firstName + " " + d.agent.lastName %></td>
+				<td><%= d.collectionTime ? d.collectionTime.toLocaleString("en-IN",{ dateStyle:"medium", timeStyle:"short"}) : '-' %></td>
+				<td>
+					<% if(d.status === 'collected' && !d.feedback?.rating) { %>
+					<button type="button" class="btn btn-sm btn-outline-primary give-feedback-btn" 
+							data-donation-id="<%= d._id %>" 
+							data-agent-name="<%= d.agent.firstName + ' ' + d.agent.lastName %>">
+						<i class="fas fa-star me-1"></i> Rate
+					</button>
+					<% } else if(d.feedback?.rating) { %>
+					<span class="text-success" title="Feedback submitted">
+						<i class="fas fa-check-circle me-1"></i> Rated <%= d.feedback.rating %>/5
+					</span>
+					<% } %>
+				</td>
+				</tr>
+			<% } %>
+			</tbody>
+        </table>
+
+		<div class="modal fade" id="feedbackModal" tabindex="-1" aria-labelledby="feedbackModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="feedbackModalLabel">Rate Your Experience</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="feedbackForm" action="/donor/donation/feedback" method="POST">
+        <div class="modal-body">
+          <input type="hidden" name="donationId" id="feedbackDonationId">
+          
+          <div class="mb-3">
+            <label class="form-label">How was your experience with the agent?</label>
+            <div class="rating-container mb-2">
+              <div class="rating">
+                <input type="radio" id="star5" name="rating" value="5" required>
+                <label for="star5"><i class="fas fa-star"></i></label>
+                <input type="radio" id="star4" name="rating" value="4">
+                <label for="star4"><i class="fas fa-star"></i></label>
+                <input type="radio" id="star3" name="rating" value="3">
+                <label for="star3"><i class="fas fa-star"></i></label>
+                <input type="radio" id="star2" name="rating" value="2">
+                <label for="star2"><i class="fas fa-star"></i></label>
+                <input type="radio" id="star1" name="rating" value="1">
+                <label for="star1"><i class="fas fa-star"></i></label>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="feedbackComment" class="form-label">Additional Comments</label>
+            <textarea class="form-control" id="feedbackComment" name="comment" rows="3" placeholder="Please share your experience with the agent..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-accent">Submit Feedback</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+      </div>
+
+      <div class="small text-muted mt-3" id="filteredInfo"></div>
+    </div>
+  </div>
+</main>
+
+<style>
+  .previous-page { background:linear-gradient(135deg,#0d6efd,#198754); min-height:100vh; display:flex; }
+  .glass-bar { background:rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.15); backdrop-filter:blur(12px); border-radius:1.1rem; padding:.85rem 1.2rem; margin:1rem 1rem 0; }
+  .panel { background:#fff; border:1px solid #eef1f4; border-radius:1.1rem; padding:1.3rem 1.35rem; box-shadow:0 .5rem 1.4rem -0.8rem rgba(0,0,0,.18); position:relative; }
+  .donation-table-wrapper { max-height:60vh; overflow:auto; border:1px solid #edf0f5; border-radius:.75rem; }
+  .status-badge { text-transform:capitalize; font-size:.65rem; letter-spacing:.5px; }
+  .status-badge.pending { background:#fff3cd; color:#856404; }
+  .status-badge.accepted { background:#d1fae5; color:#056d44; }
+  .status-badge.assigned { background:#cff4fc; color:#055160; }
+  .status-badge.collected { background:#dbeafe; color:#1e40af; }
+  .status-badge.rejected { background:#f8d7da; color:#842029; }
+  #donationsTable tbody tr { transition:.25s; }
+  #donationsTable tbody tr:hover { background:#f5f8fa; }
+  .table-responsive::-webkit-scrollbar { width:8px; height:8px; }
+  .table-responsive::-webkit-scrollbar-thumb { background:#c7d2dc; border-radius:4px; }
+  .rating-container {
+    display: flex;
+    justify-content: center;
+    direction: rtl;
+    unicode-bidi: bidi-override;
+  }
+  
+  .rating {
+    display: inline-block;
+  }
+  
+  .rating input {
+    display: none;
+  }
+  
+  .rating label {
+    color: #ddd;
+    cursor: pointer;
+    font-size: 1.5rem;
+    padding: 0 0.2rem;
+  }
+  
+  .rating label:hover,
+  .rating label:hover ~ label,
+  .rating input:checked ~ label {
+    color: #ffc107;
+  }
+  
+  .rating-stats {
+    margin-bottom: 0.75rem;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+    font-size: 0.9rem;
+  }
+  
+  .rating-bar {
+    height: 0.5rem;
+    background: #e9ecef;
+    border-radius: 0.25rem;
+    margin-top: 0.2rem;
+  }
+  
+  .rating-bar-fill {
+    height: 100%;
+    background: #ffc107;
+    border-radius: 0.25rem;
+  }
+</style>
+
+<script>
+(function(){
+  const toggler=document.getElementById('sidebar-toggler-btn');
+  if(toggler) toggler.addEventListener('click',()=> document.body.classList.toggle('sidebar-collapsed'));
+
+  const rows=[...document.querySelectorAll('[data-row]')];
+  const search=document.getElementById('searchBox');
+  const filter=document.getElementById('statusFilter');
+  const info=document.getElementById('filteredInfo');
+
+  function apply(){
+    const term=(search.value||'').toLowerCase().trim();
+    const status=filter.value;
+    let visible=0;
+    rows.forEach(r=>{
+      const matchTerm = !term ||
+        r.dataset.food.includes(term) ||
+        r.dataset.agent.includes(term) ||
+        r.dataset.status.includes(term);
+      const matchStatus = !status || r.dataset.status === status;
+      const show = matchTerm && matchStatus;
+      r.style.display = show ? '' : 'none';
+      if(show) visible++;
+    });
+    info.textContent = visible+" shown / "+rows.length+" total";
+  }
+  if(search){ search.addEventListener('input', apply); }
+  if(filter){ filter.addEventListener('change', apply); }
+  apply();
+
+  const exportBtn=document.getElementById('exportCSV');
+  if(exportBtn){
+    exportBtn.addEventListener('click',()=>{
+      const headers=['Food','Quantity','Status','CookingTime','Agent','CollectionTime'];
+      const lines=[headers.join(',')];
+      rows.forEach(r=>{
+        if(r.style.display==='none') return;
+        const cells=[...r.children].slice(1).map(td=> '"'+td.innerText.replace(/"/g,'""')+'"');
+        lines.push(cells.join(','));
+      });
+      const blob=new Blob([lines.join('\n')],{type:'text/csv'});
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download='donations.csv';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    // Setup feedback modal triggers
+    document.querySelectorAll('.give-feedback-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        const donationId = this.getAttribute('data-donation-id');
+        const agentName = this.getAttribute('data-agent-name');
+        
+        document.getElementById('feedbackDonationId').value = donationId;
+        document.getElementById('feedbackModalLabel').textContent = 'Rate your experience with ' + agentName;
+        
+        const modal = new bootstrap.Modal(document.getElementById('feedbackModal'));
+        modal.show();
+      });
+    });
+  });
+})();
+</script>

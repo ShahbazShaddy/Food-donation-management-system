@@ -1,0 +1,227 @@
+<main class="admin-prev">
+  <%- include('../partials/adminSidebar') %>
+  <div id="main-wrapper">
+
+    <!-- Top Bar -->
+    <div class="bg-white shadow-sm d-flex align-items-center justify-content-between px-3 py-2 top-bar">
+      <div class="d-flex align-items-center gap-3">
+        <button id="sidebar-toggler-btn" class="btn btn-outline-primary btn-sm"><i class="fas fa-bars"></i></button>
+        <h5 class="m-0 fw-semibold text-primary">Previous Donations</h5>
+      </div>
+      <div class="d-flex flex-wrap gap-2 align-items-center">
+        <div class="input-group input-group-sm search-box">
+          <span class="input-group-text bg-white"><i class="fas fa-search text-secondary"></i></span>
+          <input id="searchPrev" type="text" class="form-control" placeholder="Search donor / food / status">
+          <button class="btn btn-outline-secondary" id="clearPrev" type="button"><i class="fas fa-times"></i></button>
+        </div>
+        <select id="statusFilter" class="form-select form-select-sm w-auto">
+          <option value="">All Status</option>
+          <option value="pending">Pending</option>
+          <option value="accepted">Accepted</option>
+          <option value="assigned">Assigned</option>
+          <option value="collected">Collected</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="container-fluid py-4">
+
+      <!-- Stats -->
+      <div class="row g-3 mb-3">
+        <div class="col-12 col-md-auto">
+          <div class="chip gradient-blue">
+            <span class="chip-label">Total</span>
+            <span class="chip-value"><%= previousDonations.length %></span>
+          </div>
+        </div>
+        <% 
+          const counts = {pending:0,accepted:0,assigned:0,collected:0,rejected:0};
+          previousDonations.forEach(d=>counts[d.status] = (counts[d.status]||0)+1);
+          const mapColors = {
+            pending:'gradient-gray',
+            accepted:'gradient-amber',
+            assigned:'gradient-indigo',
+            collected:'gradient-green',
+            rejected:'gradient-red'
+          };
+          Object.keys(counts).forEach(st=>{
+        %>
+          <div class="col-6 col-md-auto">
+            <div class="chip <%= mapColors[st] %>" title="<%= st %> donations">
+              <span class="chip-label"><%= st %></span>
+              <span class="chip-value"><%= counts[st] %></span>
+            </div>
+          </div>
+        <% }) %>
+        <div class="col-12 col-md ms-md-auto">
+          <div class="small text-muted mt-2 mt-md-0 text-md-end" id="tableInfo">
+            Showing <span id="visiblePrev"><%= previousDonations.length %></span> of <%= previousDonations.length %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="panel">
+        <div class="panel-head d-flex flex-wrap gap-2 align-items-center">
+          <h6 class="m-0 fw-semibold">
+            <i class="fas fa-archive me-2 text-primary"></i>Donation History
+          </h6>
+        </div>
+        <div class="panel-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 table-prev">
+              <thead>
+                <tr>
+                  <th style="width:55px" class="sortable" data-sort="idx">#</th>
+                  <th class="sortable" data-sort="donor">Donor</th>
+                  <th class="sortable" data-sort="food">Food Type</th>
+                  <th class="sortable text-center" data-sort="qty">Quantity</th>
+                  <th class="sortable text-center" data-sort="status">Status</th>
+                  <th style="width:110px" class="text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="prevBody">
+                <% if(previousDonations.length === 0){ %>
+                  <tr>
+                    <td colspan="6" class="text-center py-5">
+                      <div class="text-muted">
+                        <i class="fas fa-clipboard-list fa-2x mb-3 opacity-50"></i>
+                        <p class="m-0">No previous donations.</p>
+                      </div>
+                    </td>
+                  </tr>
+                <% } else { %>
+                  <% for(let i=0;i<previousDonations.length;i++){ const d = previousDonations[i]; %>
+                    <tr data-row
+                        data-donor="<%= (d.donor.firstName+' '+d.donor.lastName).toLowerCase() %>"
+                        data-food="<%= d.foodType.toLowerCase() %>"
+                        data-status="<%= d.status.toLowerCase() %>"
+                        data-qty="<%= d.quantity %>">
+                      <td class="fw-semibold text-muted"><%= i+1 %></td>
+                      <td>
+                        <div class="d-flex align-items-center gap-2">
+                          <div class="avatar-sm">
+                            <span><%= d.donor.firstName[0].toUpperCase() %></span>
+                          </div>
+                          <div class="lh-1">
+                            <span class="fw-semibold donor-name"><%= d.donor.firstName %> <%= d.donor.lastName %></span>
+                            <small class="text-muted d-block"><%= d.donor.email %></small>
+                          </div>
+                        </div>
+                      </td>
+                      <td><span class="food-pill"><i class="fas fa-utensils me-1"></i><%= d.foodType %></span></td>
+                      <td class="text-center"><span class="qty-badge"><%= d.quantity %></span></td>
+                      <td class="text-center">
+                        <span class="status-badge <%= d.status %>">
+                          <i class="fas fa-circle me-1"></i><%= d.status %>
+                        </span>
+                      </td>
+                      <td class="text-center">
+                        <a href="/admin/donation/view/<%= d._id %>" class="btn btn-sm btn-outline-primary">View</a>
+                      </td>
+                    </tr>
+                  <% } %>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</main>
+
+<style>
+.admin-prev { background:#f3f6fb; min-height:100vh; }
+.top-bar { position:sticky; top:0; z-index:10; }
+.panel { background:#fff; border:1px solid #e5eaf1; border-radius:1rem; box-shadow:0 6px 18px -8px rgba(0,0,0,.08); }
+.panel-head { padding:.85rem 1.1rem; border-bottom:1px solid #eef2f6; background:linear-gradient(90deg,#f8fafc,#f1f5f9); }
+.table-prev thead th { font-size:.65rem; text-transform:uppercase; letter-spacing:.7px; font-weight:600; background:#f1f5f9; cursor:pointer; }
+.table-prev tbody tr { transition:background .25s; }
+.table-prev tbody tr:hover { background:#f5faff; }
+.search-box { box-shadow:0 4px 12px -6px rgba(0,0,0,.15); border-radius:.6rem; overflow:hidden; }
+.chip { background:#1d4ed8; color:#fff; padding:.55rem .85rem; border-radius:.75rem; display:inline-flex; align-items:center; gap:.55rem; font-weight:600; font-size:.8rem; letter-spacing:.5px; box-shadow:0 4px 10px -4px rgba(0,0,0,.25); }
+.chip-label { text-transform:uppercase; opacity:.85; font-size:.6rem; letter-spacing:.8px; }
+.chip-value { font-size:1.05rem; line-height:1; }
+.gradient-blue { background:linear-gradient(135deg,#2563eb,#1d4ed8); }
+.gradient-gray { background:linear-gradient(135deg,#6c757d,#495057); }
+.gradient-amber { background:linear-gradient(135deg,#f59e0b,#d97706); }
+.gradient-indigo { background:linear-gradient(135deg,#6366f1,#4f46e5); }
+.gradient-green { background:linear-gradient(135deg,#198754,#0d6f46); }
+.gradient-red { background:linear-gradient(135deg,#dc2626,#b91c1c); }
+.avatar-sm { width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:.9rem; }
+.food-pill { display:inline-flex;align-items:center;gap:.35rem;background:#eef5ff;color:#1d4ed8;border:1px solid #c8ddff;padding:.35rem .65rem;font-size:.7rem;font-weight:600;border-radius:1.2rem; }
+.qty-badge { background:#fff;border:1px solid #d9e2ec;display:inline-block;min-width:48px;padding:.35rem .55rem;border-radius:.65rem;font-size:.7rem;font-weight:600; }
+.status-badge { display:inline-flex;align-items:center;font-size:.6rem;text-transform:uppercase;letter-spacing:1px;padding:.45rem .65rem;font-weight:700;border-radius:2rem;border:1px solid transparent; }
+.status-badge.pending { background:#fffbe6;color:#856404;border-color:#ffe58f; }
+.status-badge.accepted { background:#e0f2ff;color:#075985;border-color:#bae6fd; }
+.status-badge.assigned { background:#ede9fe;color:#5b21b6;border-color:#ddd6fe; }
+.status-badge.collected { background:#dcfce7;color:#065f46;border-color:#bbf7d0; }
+.status-badge.rejected { background:#fee2e2;color:#991b1b;border-color:#fecaca; }
+.sortable:after { content:"\f0dc"; font-family:"Font Awesome 6 Free"; font-weight:900; font-size:.55rem; opacity:.4; margin-left:.35rem; }
+.sortable.sorted-asc:after { content:"\f160"; opacity:.85; }
+.sortable.sorted-desc:after { content:"\f161"; opacity:.85; }
+@media (max-width: 767.98px){
+  .chip { font-size:.7rem; padding:.5rem .7rem; }
+  .chip-value { font-size:.9rem; }
+  .panel-head { flex-direction:column; align-items:flex-start!important; gap:.5rem; }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const rows=[...document.querySelectorAll('#prevBody tr[data-row]')];
+  const visibleEl=document.getElementById('visiblePrev');
+  const search=document.getElementById('searchPrev');
+  const clearBtn=document.getElementById('clearPrev');
+  const statusFilter=document.getElementById('statusFilter');
+
+  function apply(){
+    const q=(search.value||'').toLowerCase().trim();
+    const st=(statusFilter.value||'').toLowerCase();
+    let vis=0;
+    rows.forEach(r=>{
+      const donor=r.dataset.donor;
+      const food=r.dataset.food;
+      const status=r.dataset.status;
+      const hay= donor+' '+food+' '+status+' '+r.dataset.qty;
+      const show=(!q || hay.includes(q)) && (!st || status===st);
+      r.style.display= show ? '' : 'none';
+      if(show) vis++;
+    });
+    if(visibleEl) visibleEl.textContent=vis;
+  }
+  if(search) search.addEventListener('input',apply);
+  if(statusFilter) statusFilter.addEventListener('change',apply);
+  if(clearBtn) clearBtn.addEventListener('click',()=>{ search.value=''; apply(); search.focus(); });
+
+  // Sorting
+  document.querySelectorAll('.table-prev thead th.sortable').forEach(th=>{
+    th.addEventListener('click',()=>{
+      const key=th.dataset.sort;
+      const current= th.classList.contains('sorted-asc')?'asc': th.classList.contains('sorted-desc')?'desc':'';
+      document.querySelectorAll('.table-prev thead th.sortable').forEach(h=>h.classList.remove('sorted-asc','sorted-desc'));
+      const dir = current==='asc'?'desc':'asc';
+      th.classList.add(dir==='asc'?'sorted-asc':'sorted-desc');
+      const mult= dir==='asc'?1:-1;
+      const getVal=tr=>{
+        if(key==='idx') return parseInt(tr.querySelector('td,th').textContent)||0;
+        if(key==='donor') return tr.dataset.donor;
+        if(key==='food') return tr.dataset.food;
+        if(key==='qty') return parseInt(tr.dataset.qty)||0;
+        if(key==='status') return tr.dataset.status;
+        return '';
+      };
+      rows.sort((a,b)=>{
+        const va=getVal(a), vb=getVal(b);
+        if(va<vb) return -1*mult;
+        if(va>vb) return 1*mult;
+        return 0;
+      }).forEach(r=>r.parentNode.appendChild(r));
+    });
+  });
+});
+</script>

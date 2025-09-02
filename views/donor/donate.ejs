@@ -1,0 +1,117 @@
+<main class="donor-donate-page">
+  <%- include('../partials/donorSidebar') %>
+
+  <div id="main-wrapper">
+    <div class="glass-bar d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+      <div class="d-flex align-items-center gap-3">
+        <button id="sidebar-toggler-btn" class="btn btn-icon btn-outline-light border-0 shadow-sm" aria-label="Toggle sidebar">
+          <i class="fas fa-bars"></i>
+        </button>
+        <h5 class="m-0 fw-bold text-white">Create Donation</h5>
+      </div>
+      <a href="/donor/pendingDonations" class="btn btn-outline-light btn-sm fw-semibold"><i class="fas fa-clock me-1"></i> Pending</a>
+    </div>
+
+    <form action="/donor/donate" method="POST" class="donation-form panel mx-3 mb-5">
+      <div class="panel-header mb-3">
+        <h6 class="panel-title mb-1">Donation Details</h6>
+        <p class="small text-muted mb-0">Provide accurate info to speed assignment.</p>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-md-6">
+          <label for="food" class="form-label small fw-semibold text-uppercase">Food Type</label>
+          <input type="text" name="donation[foodType]" class="form-control form-control-lg" id="food" placeholder="E.g. Cooked rice, Veg curry" required>
+        </div>
+        <div class="col-md-3">
+          <label for="quantity" class="form-label small fw-semibold text-uppercase">Quantity / Servings</label>
+          <input type="text" name="donation[quantity]" class="form-control form-control-lg" id="quantity" placeholder="E.g. 25 plates" required>
+        </div>
+        <div class="col-md-3">
+          <label for="time" class="form-label small fw-semibold text-uppercase">Cooking Time</label>
+          <input type="datetime-local" name="donation[cookingTime]" class="form-control form-control-lg" id="time" required>
+          <div class="form-text small" id="freshnessInfo"></div>
+        </div>
+
+        <div class="col-md-8">
+          <label for="address" class="form-label small fw-semibold text-uppercase">Pickup Address</label>
+          <input type="text" name="donation[address]" class="form-control" id="address" placeholder="Full address" value="<%= currentUser.address %>" required>
+        </div>
+        <div class="col-md-4">
+          <label for="phone" class="form-label small fw-semibold text-uppercase">Phone</label>
+          <input type="tel" pattern="^[0-9 +()-]{7,}$" name="donation[phone]" class="form-control" id="phone" placeholder="Contact number" value="<%= currentUser.phone %>" required>
+        </div>
+
+        <div class="col-12">
+          <label for="msg" class="form-label small fw-semibold text-uppercase">Message (Optional)</label>
+          <textarea name="donation[donorToAdminMsg]" class="form-control" id="msg" rows="4" placeholder="Storage notes, dietary info, packaging etc."></textarea>
+          <div class="d-flex justify-content-between small mt-1">
+            <span class="text-muted">Helpful context improves routing.</span>
+            <span id="msgCount" class="text-muted">0 / 300</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4 d-flex flex-wrap gap-2">
+        <button type="submit" class="btn btn-accent fw-semibold px-4"><i class="fas fa-paper-plane me-2"></i>Submit Donation</button>
+        <button type="reset" class="btn btn-outline-secondary px-4"><i class="fas fa-undo me-2"></i>Reset</button>
+      </div>
+
+      <div class="alert alert-info small mt-4 mb-0">
+        <i class="fas fa-info-circle me-2"></i> Ensure food is safely stored until pickup. Avoid sealed hot containers without vents.
+      </div>
+    </form>
+  </div>
+</main>
+
+<style>
+  .donor-donate-page { background:linear-gradient(135deg,#0d6efd,#198754); min-height:100vh; display:flex; }
+  .glass-bar { background:rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.15); backdrop-filter:blur(12px); border-radius:1.1rem; padding:.85rem 1.2rem; margin:1rem 1rem 0; }
+  .panel { background:#fff; border:1px solid #eef1f4; border-radius:1.1rem; padding:1.5rem 1.5rem 2rem; box-shadow:0 .5rem 1.5rem -0.75rem rgba(0,0,0,.15); position:relative; overflow:hidden; }
+  .panel:before { content:""; position:absolute; inset:0; background:radial-gradient(circle at 90% 15%,rgba(0,0,0,.04),transparent 55%); pointer-events:none; }
+  .panel-title { font-weight:600; }
+  .form-control-lg { font-size:.95rem; }
+  .btn-accent { background:#ffc107; border:none; color:#212529; }
+  .btn-accent:hover { background:#ffca2c; }
+</style>
+
+<script>
+(function(){
+  // Sidebar
+  const toggler = document.getElementById('sidebar-toggler-btn');
+  if(toggler){ toggler.addEventListener('click',()=> document.body.classList.toggle('sidebar-collapsed')); }
+
+  // Auto set datetime
+  const timeInput = document.getElementById('time');
+  if(timeInput){
+    const d=new Date();
+    const pad=n=>('0'+n).slice(-2);
+    timeInput.value = d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+"T"+pad(d.getHours())+":"+pad(d.getMinutes());
+    timeInput.addEventListener('input', updateFreshness);
+    updateFreshness();
+  }
+  function updateFreshness(){
+    const info=document.getElementById('freshnessInfo');
+    if(!timeInput || !info) return;
+    const val=timeInput.value;
+    if(!val){ info.textContent=''; return; }
+    const cooked=new Date(val);
+    const diffH=(Date.now()-cooked.getTime())/36e5;
+    if(diffH<0) info.textContent="Cooking time is in the future."; 
+    else info.textContent = diffH.toFixed(1)+"h since cooking.";
+    info.className="form-text small "+(diffH>6?'text-danger': diffH>3?'text-warning':'text-success');
+  }
+
+  // Message counter
+  const msg=document.getElementById('msg');
+  const count=document.getElementById('msgCount');
+  if(msg && count){
+    msg.addEventListener('input',()=>{
+      const len=msg.value.length;
+      if(len>300) msg.value=msg.value.slice(0,300);
+      count.textContent = msg.value.length+" / 300";
+      count.classList.toggle('text-danger', msg.value.length>280);
+    });
+  }
+})();
+</script>

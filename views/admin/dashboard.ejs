@@ -1,0 +1,326 @@
+<main class="admin-dashboard">
+  <%- include('../partials/adminSidebar') %>
+
+  <div id="main-wrapper">
+    <!-- Top Bar -->
+    <div class="bg-white shadow-sm d-flex align-items-center justify-content-between px-3 py-2 top-bar">
+      <div class="d-flex align-items-center gap-3">
+        <button id="sidebar-toggler-btn" class="btn btn-outline-primary btn-sm"><i class="fas fa-bars"></i></button>
+        <h5 class="m-0 fw-semibold text-primary">Admin Dashboard</h5>
+      </div>
+      <div class="small text-muted">
+        <i class="far fa-clock me-1"></i><span id="dashTime"></span>
+      </div>
+    </div>
+
+    <div class="dashboard-content container-fluid py-4">
+      <%
+        // Safe number conversion helper
+        function safeNum(val) {
+          const num = Number(val);
+          return !isNaN(num) ? num : 0;
+        }
+
+        // Safe percentage calculation helper
+        function safePercent(numerator, denominator) {
+          const num = safeNum(numerator);
+          const den = safeNum(denominator);
+          return den > 0 ? (num / den * 100).toFixed(1) : '0';
+        }
+
+        // Convert all counts to safe numbers
+        const nPending = safeNum(numPendingDonations);
+        const nAccepted = safeNum(numAcceptedDonations);
+        const nAssigned = safeNum(numAssignedDonations);
+        const nCollected = safeNum(numCollectedDonations);
+        const nAdmins = safeNum(numAdmins);
+        const nDonors = safeNum(numDonors);
+        const nAgents = safeNum(numAgents);
+
+        // Calculate totals
+        const totalDonationRecords = nPending + nAccepted + nAssigned + nCollected;
+        const collectedPerc = totalDonationRecords > 0 ? Math.round((nCollected/totalDonationRecords)*100) : 0;
+      %>
+
+      <!-- Summary Cards -->
+      <div class="row g-3 stats-row">
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="stat-card gradient-blue">
+            <div class="icon"><i class="fas fa-user-shield"></i></div>
+            <div class="value"><%= nAdmins %></div>
+            <div class="label">Admins</div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="stat-card gradient-green">
+            <div class="icon"><i class="fas fa-hand-holding-heart"></i></div>
+            <div class="value"><%= nDonors %></div>
+            <div class="label">Donors</div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="stat-card gradient-indigo">
+            <div class="icon"><i class="fas fa-truck"></i></div>
+            <div class="value"><%= nAgents %></div>
+            <div class="label">Agents</div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="stat-card gradient-orange">
+            <div class="icon"><i class="fas fa-database"></i></div>
+            <div class="value"><%= totalDonationRecords %></div>
+            <div class="label">Total Donations</div>
+            <div class="mini-progress mt-2">
+              <div class="mini-fill" style="width:<%= collectedPerc %>%"></div>
+            </div>
+            <div class="mini-caption"><%= collectedPerc %>% collected</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="row g-3 mt-1">
+        <!-- Status Distribution -->
+        <div class="col-12 col-lg-4">
+          <div class="panel h-100">
+            <div class="panel-head">
+              <h6 class="m-0 fw-semibold"><i class="fas fa-chart-pie me-2 text-primary"></i>Status Distribution</h6>
+            </div>
+            <div class="panel-body">
+              <canvas id="donationStatusChart" height="210"></canvas>
+              <div class="legend-grid mt-3">
+                <div><span class="dot bg-pending"></span>Pending (<%= nPending %>)</div>
+                <div><span class="dot bg-accepted"></span>Accepted (<%= nAccepted %>)</div>
+                <div><span class="dot bg-assigned"></span>Assigned (<%= nAssigned %>)</div>
+                <div><span class="dot bg-collected"></span>Collected (<%= nCollected %>)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Funnel / Progress -->
+        <div class="col-12 col-lg-4">
+          <div class="panel h-100">
+            <div class="panel-head">
+              <h6 class="m-0 fw-semibold"><i class="fas fa-route me-2 text-success"></i>Pipeline Progress</h6>
+            </div>
+            <div class="panel-body">
+              <ul class="pipeline list-unstyled m-0">
+                <li>
+                  <div class="step">
+                    <span>Pending</span>
+                    <span class="count"><%= nPending %></span>
+                  </div>
+                  <div class="bar"><div style="width:<%= safePercent(nPending, totalDonationRecords) %>%"></div></div>
+                </li>
+                <li>
+                  <div class="step">
+                    <span>Accepted</span>
+                    <span class="count"><%= nAccepted %></span>
+                  </div>
+                  <div class="bar"><div style="width:<%= safePercent(nAccepted, totalDonationRecords) %>%"></div></div>
+                </li>
+                <li>
+                  <div class="step">
+                    <span>Assigned</span>
+                    <span class="count"><%= nAssigned %></span>
+                  </div>
+                  <div class="bar"><div style="width:<%= safePercent(nAssigned, totalDonationRecords) %>%"></div></div>
+                </li>
+                <li>
+                  <div class="step">
+                    <span>Collected</span>
+                    <span class="count"><%= nCollected %></span>
+                  </div>
+                  <div class="bar collected"><div style="width:<%= safePercent(nCollected, totalDonationRecords) %>%"></div></div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trend (placeholder if no data) -->
+        <div class="col-12 col-lg-4">
+          <div class="panel h-100">
+            <div class="panel-head">
+              <h6 class="m-0 fw-semibold"><i class="fas fa-line-chart me-2 text-warning"></i>Weekly Trend</h6>
+            </div>
+            <div class="panel-body">
+              <canvas id="trendChart" height="210"></canvas>
+              <small class="text-muted d-block mt-2">Showing real donation data for the past 7 days.</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Insights -->
+      <div class="row g-3 mt-1">
+        <div class="col-12 col-lg-6">
+          <div class="panel">
+            <div class="panel-head"><h6 class="m-0 fw-semibold"><i class="fas fa-lightbulb me-2 text-info"></i>Insights</h6></div>
+            <div class="panel-body small insights">
+              <div><i class="fas fa-check-circle text-success me-2"></i>Collection rate: <strong><%= collectedPerc %>%</strong></div>
+              <div><i class="fas fa-hourglass-half text-warning me-2"></i>Items waiting assignment: <strong><%= nAccepted %></strong></div>
+              <div><i class="fas fa-user-friends text-primary me-2"></i>Agents to Donations ratio: <strong><%= nAgents %> : <%= totalDonationRecords || 1 %></strong></div>
+              <div><i class="fas fa-exclamation-circle text-danger me-2"></i>Items still uncollected after assignment: <strong><%= nAssigned %></strong></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-lg-6">
+          <div class="panel">
+            <div class="panel-head"><h6 class="m-0 fw-semibold"><i class="fas fa-tasks me-2 text-secondary"></i>Actions</h6></div>
+            <div class="panel-body">
+              <div class="d-flex flex-wrap gap-2">
+                <a href="/admin/donations/pending" class="btn btn-outline-primary btn-sm"><i class="fas fa-inbox me-1"></i>Pending</a>
+                <a href="/admin/donations/previous" class="btn btn-outline-success btn-sm"><i class="fas fa-archive me-1"></i>History</a>
+                <a href="/admin/agents" class="btn btn-outline-indigo btn-sm"><i class="fas fa-users me-1"></i>Agents</a>
+                <a href="/admin/profile" class="btn btn-outline-dark btn-sm"><i class="fas fa-user-cog me-1"></i>Profile</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div>
+</main>
+
+<!-- Chart.js CDN (lightweight defer) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+
+<style>
+  .admin-dashboard { background:#f3f6fb; min-height:100vh; }
+  .top-bar { position:sticky; top:0; z-index:5; }
+  .stats-row .stat-card {
+    position:relative; overflow:hidden; border-radius:1rem; padding:1rem 1.1rem 1.05rem;
+    color:#fff; box-shadow:0 8px 18px -8px rgba(0,0,0,.25); backdrop-filter:blur(4px);
+  }
+  .stat-card .icon { position:absolute; top:.7rem; right:.8rem; font-size:1.6rem; opacity:.25; }
+  .stat-card .value { font-size:2.1rem; line-height:1.1; font-weight:700; }
+  .stat-card .label { text-transform:uppercase; font-size:.7rem; letter-spacing:1px; opacity:.9; font-weight:600; }
+  .gradient-blue { background:linear-gradient(135deg,#2563eb,#1d4ed8); }
+  .gradient-green { background:linear-gradient(135deg,#198754,#11704a); }
+  .gradient-indigo { background:linear-gradient(135deg,#6366f1,#4f46e5); }
+  .gradient-orange { background:linear-gradient(135deg,#f59e0b,#d97706); }
+  .mini-progress { height:5px; background:rgba(255,255,255,.25); border-radius:3px; overflow:hidden; }
+  .mini-fill { height:100%; background:rgba(255,255,255,.9); }
+  .mini-caption { font-size:.65rem; margin-top:.25rem; opacity:.85; font-weight:600; letter-spacing:.7px; }
+
+  .panel { background:#fff; border:1px solid #e4e9f1; border-radius:1rem; box-shadow:0 4px 14px -6px rgba(0,0,0,.08); }
+  .panel-head { padding:.75rem 1rem; border-bottom:1px solid #eef1f6; background:linear-gradient(90deg,#f8fafc,#f1f5f9); border-radius:1rem 1rem 0 0; }
+  .panel-body { padding:1rem 1rem 1.2rem; }
+  .legend-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:.4rem .75rem; font-size:.7rem; font-weight:600; text-transform:uppercase; letter-spacing:.6px; }
+  .legend-grid .dot { width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:.4rem; vertical-align:middle; }
+  .bg-pending { background:#6c757d; }
+  .bg-accepted { background:#ffc107; }
+  .bg-assigned { background:#dc3545; }
+  .bg-collected { background:#198754; }
+
+  .pipeline li { margin-bottom:.55rem; }
+  .pipeline .step { display:flex; justify-content:space-between; font-size:.83rem; font-weight:600; }
+  .pipeline .bar { height:6px; background:#edf1f6; border-radius:4px; overflow:hidden; margin-top:.25rem; }
+  .pipeline .bar div { height:100%; background:linear-gradient(90deg,#60a5fa,#2563eb); border-radius:4px; transition:width .5s ease; }
+  .pipeline .bar.collected div { background:linear-gradient(90deg,#34d399,#059669); }
+
+  .insights > div { padding:.35rem .2rem; border-bottom:1px dashed #e3e7ef; }
+  .insights > div:last-child { border-bottom:0; }
+
+  .btn-outline-indigo { --c:#6366f1; color:var(--c); border:1px solid var(--c); }
+  .btn-outline-indigo:hover { background:var(--c); color:#fff; }
+
+  @media (max-width: 991.98px){
+    .stats-row .stat-card { padding:1rem .9rem; }
+    .stat-card .value { font-size:1.8rem; }
+  }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const dashTime=document.getElementById('dashTime');
+  function updateTime(){ if(dashTime) dashTime.textContent=new Date().toLocaleString(); }
+  updateTime(); setInterval(updateTime,60000);
+
+  function initCharts(){
+    if(!window.Chart){ return setTimeout(initCharts,100); }
+
+    // Doughnut
+    (function(){
+      const ctx=document.getElementById('donationStatusChart');
+      if(!ctx) return;
+      new Chart(ctx,{
+        type:'doughnut',
+        data:{
+          labels:['Pending','Accepted','Assigned','Collected'],
+          datasets:[{
+            data:[<%= nPending %>,<%= nAccepted %>,<%= nAssigned %>,<%= nCollected %>],
+            backgroundColor:['#6c757d','#ffc107','#dc3545','#198754'],
+            borderWidth:0,
+            hoverOffset:6
+          }]
+        },
+        options:{ plugins:{ legend:{ display:false } }, cutout:'58%' }
+      });
+    })();
+
+    // Weekly Trend (safe defaults)
+    (function(){
+      const ctx=document.getElementById('trendChart');
+      if(!ctx) return;
+      <% 
+        const _weeklyTrend = typeof weeklyTrendData !== 'undefined'
+          ? weeklyTrendData
+          : { days:[], counts:{ collected:[], assigned:[] } };
+      %>
+      const days = <%- JSON.stringify(_weeklyTrend.days) %>;
+      const collectedData = <%- JSON.stringify(_weeklyTrend.counts.collected || []) %>;
+      const assignedData = <%- JSON.stringify(_weeklyTrend.counts.assigned || []) %>;
+
+      if(days.length === 0){
+        // Optional placeholder message
+        console.warn("No weekly trend data");
+      }
+
+      new Chart(ctx,{
+        type:'line',
+        data:{
+          labels:days,
+          datasets:[
+            {
+              label:'Collected',
+              data:collectedData,
+              fill:true,
+              tension:.35,
+              backgroundColor:'rgba(25,135,84,.15)',
+              borderColor:'#198754',
+              pointBackground:'#198754',
+              pointRadius:4,
+              pointHoverRadius:6,
+              borderWidth:2
+            },
+            {
+              label:'Assigned',
+              data:assignedData,
+              fill:false,
+              tension:.35,
+              borderColor:'#dc3545',
+              pointBackground:'#dc3545',
+              pointRadius:3,
+              pointHoverRadius:5,
+              borderWidth:2,
+              borderDash:[5,5]
+            }
+          ]
+        },
+        options:{
+          plugins:{ legend:{ display:true, position:'top', labels:{ boxWidth:12, usePointStyle:true, font:{ size:11 } } } },
+          scales:{
+            y:{ beginAtZero:true, ticks:{ precision:0 } },
+            x:{ grid:{ display:false } }
+          }
+        }
+      });
+    })();
+  }
+  initCharts();
+});
+</script>

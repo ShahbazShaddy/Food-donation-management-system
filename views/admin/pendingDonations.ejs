@@ -1,0 +1,278 @@
+<main class="admin-pending">
+  <%- include('../partials/adminSidebar') %>
+
+  <div id="main-wrapper">
+
+    <!-- Top Bar -->
+    <div class="bg-white shadow-sm d-flex align-items-center justify-content-between px-3 py-2 top-bar">
+      <div class="d-flex align-items-center gap-3">
+        <button id="sidebar-toggler-btn" class="btn btn-outline-primary btn-sm"><i class="fas fa-bars"></i></button>
+        <h5 class="m-0 fw-semibold text-primary">Pending Donations</h5>
+      </div>
+      <div class="small text-muted">
+        <i class="far fa-clock me-1"></i><span id="pageTime"></span>
+      </div>
+    </div>
+
+    <div class="content-wrapper container-fluid py-4">
+
+      <!-- Summary + Filters -->
+      <div class="row g-3 mb-3">
+        <div class="col-12 col-md-8">
+          <div class="stats-strip">
+            <div class="chip">
+              <span class="chip-label">Pending</span>
+              <span class="chip-value"><%= (pendingDonations && pendingDonations.length) || 0 %></span>
+            </div>
+            <div class="chip alt" title="Total unique donors in this list">
+              <span class="chip-label">Donors</span>
+              <span class="chip-value">
+                <%
+                  const donorSet = new Set();
+                  (pendingDonations||[]).forEach(d => donorSet.add(d.donor && d.donor._id ? d.donor._id.toString() : ''));
+                  const donorCount = donorSet.has('') ? donorSet.size - 1 : donorSet.size;
+                %>
+                <%= donorCount %>
+              </span>
+            </div>
+            <div class="chip alt2" title="Total quantity entries (raw count)">
+              <span class="chip-label">Items</span>
+              <span class="chip-value"><%= (pendingDonations||[]).reduce((a,d)=>a+1,0) %></span>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-md-4">
+          <form class="filter-bar" onsubmit="return false;">
+            <div class="input-group input-group-sm search-box">
+              <span class="input-group-text bg-white"><i class="fas fa-search text-secondary"></i></span>
+              <input id="searchInput" type="text" class="form-control" placeholder="Search donor / food / quantity">
+              <button id="clearSearch" class="btn btn-outline-secondary" type="button" title="Clear"><i class="fas fa-times"></i></button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Table Panel -->
+      <div class="panel">
+        <div class="panel-head d-flex flex-wrap gap-2 align-items-center">
+          <h6 class="m-0 fw-semibold"><i class="fas fa-inbox me-2 text-primary"></i>Awaiting Review</h6>
+          <div class="ms-auto small text-muted" id="tableInfo">
+            Showing <span id="visibleCount"><%= (pendingDonations && pendingDonations.length) || 0 %></span> of <%= (pendingDonations && pendingDonations.length) || 0 %>
+          </div>
+        </div>
+        <div class="panel-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 table-custom" id="pendingTable">
+              <thead>
+                <tr>
+                  <th style="width:55px">#</th>
+                  <th>Donor</th>
+                  <th>Food Type</th>
+                  <th class="text-center">Quantity</th>
+                  <th class="text-center">Cooking Time</th>
+                  <th class="text-center">Status</th>
+                  <th style="width:110px" class="text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if ((pendingDonations||[]).length === 0) { %>
+                  <tr>
+                    <td colspan="7" class="text-center py-5">
+                      <div class="text-muted">
+                        <i class="fas fa-clipboard-list fa-2x mb-3 opacity-50"></i>
+                        <p class="m-0">No pending donations right now.</p>
+                      </div>
+                    </td>
+                  </tr>
+                <% } else { %>
+                  <% for(let i=0; i<pendingDonations.length; i++) { const d = pendingDonations[i]; %>
+                    <tr data-row
+                        data-donor="<%= (d.donor.firstName + ' ' + d.donor.lastName).toLowerCase() %>"
+                        data-food="<%= d.foodType.toLowerCase() %>"
+                        data-quantity="<%= d.quantity.toString().toLowerCase() %>"
+                        data-search="<%= (d.donor.firstName + ' ' + d.donor.lastName + ' ' + d.foodType + ' ' + d.quantity).toLowerCase() %>">
+                      <td class="fw-semibold text-muted"><%= i+1 %></td>
+                      <td>
+                        <div class="d-flex align-items-center gap-2">
+                          <div class="avatar-sm">
+                            <span><%= d.donor.firstName[0].toUpperCase() %></span>
+                          </div>
+                          <div class="d-flex flex-column">
+                            <span class="fw-semibold donor-name"><%= d.donor.firstName %> <%= d.donor.lastName %></span>
+                            <small class="text-muted"><%= d.donor.email %></small>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="fw-semibold">
+                        <span class="food-pill"><i class="fas fa-utensils me-1"></i><%= d.foodType %></span>
+                      </td>
+                      <td class="text-center">
+                        <span class="qty-badge"><%= d.quantity %></span>
+                      </td>
+                      <td class="text-center small">
+                        <%= d.cookingTime ? d.cookingTime.toLocaleString('en-IN',{ dateStyle:'medium', timeStyle:'short'}) : '-' %>
+                      </td>
+                      <td class="text-center">
+                        <span class="status-badge pending">
+                          <i class="fas fa-hourglass-half me-1"></i><%= d.status %>
+                        </span>
+                      </td>
+                      <td class="text-center">
+                        <a href="/admin/donation/view/<%= d._id %>" class="btn btn-sm btn-outline-primary">
+                          View
+                        </a>
+                      </td>
+                    </tr>
+                  <% } %>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div>
+</main>
+
+<style>
+  .admin-pending { background:#f3f6fb; min-height:100vh; }
+  .top-bar { position:sticky; top:0; z-index:10; }
+  .stats-strip { display:flex; flex-wrap:wrap; gap:.6rem; }
+  .chip {
+    background:linear-gradient(135deg,#2563eb,#1d4ed8);
+    color:#fff; padding:.55rem .85rem; border-radius:.75rem;
+    display:flex; align-items:center; gap:.55rem; font-weight:600;
+    font-size:.8rem; letter-spacing:.5px; box-shadow:0 4px 10px -4px rgba(0,0,0,.25);
+  }
+  .chip.alt { background:linear-gradient(135deg,#198754,#0d6f46); }
+  .chip.alt2 { background:linear-gradient(135deg,#6366f1,#4f46e5); }
+  .chip-label { text-transform:uppercase; opacity:.85; font-size:.65rem; letter-spacing:.8px; }
+  .chip-value { font-size:1.05rem; line-height:1; }
+
+  .filter-bar .search-box { box-shadow:0 4px 12px -6px rgba(0,0,0,.15); border-radius:.75rem; overflow:hidden; }
+  .filter-bar input { border:0; }
+  .filter-bar input:focus { box-shadow:none; }
+  #clearSearch { border-top-left-radius:0; border-bottom-left-radius:0; }
+
+  .panel { background:#fff; border:1px solid #e4e9f1; border-radius:1rem; box-shadow:0 6px 18px -8px rgba(0,0,0,.08); overflow:hidden; }
+  .panel-head { padding:.85rem 1.1rem; border-bottom:1px solid #eef1f6; background:linear-gradient(90deg,#f8fafc,#f1f5f9); }
+  .panel-body { padding:1rem; }
+
+  .table-custom thead th {
+    font-size:.7rem; text-transform:uppercase; letter-spacing:.8px; font-weight:600;
+    background:#f1f5f9; border-bottom:1px solid #e5eaf1;
+  }
+  .table-custom tbody tr { transition:background .25s ease, transform .25s ease; }
+  .table-custom tbody tr:hover { background:#f5faff; }
+  .table-custom tbody tr.hide-row { display:none; }
+
+  .avatar-sm {
+    width:38px; height:38px; border-radius:12px;
+    background:linear-gradient(135deg,#ffc107,#ffda6a);
+    color:#2d3436; font-weight:700; font-size:.95rem;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 0 0 3px rgba(255,255,255,.6),0 .4rem .9rem -0.4rem rgba(0,0,0,.3);
+  }
+
+  .food-pill {
+    display:inline-flex; align-items:center; gap:.3rem;
+    background:#eef5ff; color:#1d4ed8;
+    border:1px solid #c8ddff; padding:.35rem .65rem;
+    font-size:.75rem; font-weight:600; letter-spacing:.4px;
+    border-radius:1.2rem;
+  }
+
+  .qty-badge {
+    background:#fff; border:1px solid #d9e2ec;
+    display:inline-block; min-width:48px; padding:.35rem .55rem;
+    border-radius:.65rem; font-size:.75rem; font-weight:600;
+    box-shadow:0 2px 6px -2px rgba(0,0,0,.1);
+  }
+
+  .status-badge {
+    display:inline-flex; align-items:center; font-size:.65rem;
+    text-transform:uppercase; letter-spacing:1px;
+    padding:.4rem .6rem; font-weight:700; border-radius:2rem;
+    background:#fff; border:1px solid #e0e6ed;
+  }
+  .status-badge.pending { color:#856404; background:linear-gradient(135deg,#fffbe6,#ffef99); border-color:#ffe58f; }
+
+  #tableInfo { font-size:.65rem; letter-spacing:.5px; }
+
+  /* Highlight match */
+  mark.search-hit {
+    background:#fff3cd;
+    padding:0 .15rem;
+    border-radius:3px;
+  }
+
+  @media (max-width: 767.98px){
+    .panel-head { flex-direction:column; align-items:flex-start!important; gap:.5rem; }
+    .chip { font-size:.75rem; }
+  }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const timeEl = document.getElementById('pageTime');
+  function updateClock(){ if(timeEl) timeEl.textContent=new Date().toLocaleString(); }
+  updateClock(); setInterval(updateClock,60000);
+
+  const searchInput = document.getElementById('searchInput');
+  const clearBtn = document.getElementById('clearSearch');
+  const rows = Array.from(document.querySelectorAll('#pendingTable tbody tr[data-row]'));
+  const visibleCountEl = document.getElementById('visibleCount');
+  const highlightFields = ['donor-name','food-pill'];
+
+  function clearHighlights(row){
+    highlightFields.forEach(cls=>{
+      row.querySelectorAll('.'+cls).forEach(el=>{
+        el.innerHTML = el.textContent;
+      });
+    });
+  }
+
+  function applyHighlight(el, term){
+    if(!term) return;
+    const regex = new RegExp('('+term.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\$&')+')','ig');
+    el.innerHTML = el.textContent.replace(regex,'<mark class="search-hit">$1</mark>');
+  }
+
+  function filter(){
+    const q = (searchInput.value||'').trim().toLowerCase();
+    let visible = 0;
+    rows.forEach(row=>{
+      clearHighlights(row);
+      if(!q){
+        row.classList.remove('hide-row');
+        visible++;
+        return;
+      }
+      const hay = row.getAttribute('data-search');
+      if(hay.includes(q)){
+        row.classList.remove('hide-row');
+        visible++;
+        // highlight
+        highlightFields.forEach(cls=>{
+          row.querySelectorAll('.'+cls).forEach(el=>applyHighlight(el,q));
+        });
+      } else {
+        row.classList.add('hide-row');
+      }
+    });
+    if(visibleCountEl) visibleCountEl.textContent = visible;
+  }
+
+  if(searchInput){
+    searchInput.addEventListener('input', filter);
+  }
+  if(clearBtn){
+    clearBtn.addEventListener('click', ()=>{
+      searchInput.value='';
+      filter();
+      searchInput.focus();
+    });
+  }
+});
+</script>

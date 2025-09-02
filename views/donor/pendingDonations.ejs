@@ -1,0 +1,129 @@
+<main class="pending-page">
+  <%- include('../partials/donorSidebar') %>
+
+  <div id="main-wrapper">
+    <div class="glass-bar d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+      <div class="d-flex align-items-center gap-3">
+        <button id="sidebar-toggler-btn" class="btn btn-icon btn-outline-light border-0 shadow-sm" aria-label="Toggle sidebar">
+          <i class="fas fa-bars"></i>
+        </button>
+        <h5 class="m-0 fw-bold text-white">Pending Donations</h5>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="/donor/donate" class="btn btn-accent btn-sm fw-semibold"><i class="fas fa-plus me-1"></i> New</a>
+        <button id="refreshPending" class="btn btn-outline-light btn-sm fw-semibold"><i class="fas fa-sync-alt me-1"></i>Refresh</button>
+      </div>
+    </div>
+
+    <div class="mx-3 mb-4 d-flex flex-wrap gap-2 small">
+      <span class="badge bg-warning-subtle text-warning-emphasis">Pending</span>
+      <span class="badge bg-success-subtle text-success-emphasis">Accepted</span>
+      <span class="badge bg-info-subtle text-info-emphasis">Assigned</span>
+      <span class="badge bg-danger-subtle text-danger-emphasis">Rejected</span>
+      <span class="ms-auto text-white-50">Total: <%= pendingDonations.length %></span>
+    </div>
+
+    <div class="pending-grid mx-3 mb-5">
+      <% if(pendingDonations.length === 0){ %>
+        <div class="empty-state text-center text-white-50 py-5">
+          <i class="fas fa-box-open fa-2x mb-3 opacity-50"></i>
+          <p class="mb-2">No pending donations right now.</p>
+          <a href="/donor/donate" class="btn btn-light btn-sm fw-semibold"><i class="fas fa-plus me-1"></i>Create one</a>
+        </div>
+      <% } %>
+
+      <% for(let i=0;i<pendingDonations.length;i++){ const d=pendingDonations[i]; %>
+        <div class="donation-card panel status-<%= d.status %>">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <h6 class="fw-semibold mb-0">
+              <i class="fas fa-bowl-rice me-2 text-primary"></i><%= d.foodType %>
+            </h6>
+            <span class="badge status-badge <%= d.status %>"><%= d.status %></span>
+          </div>
+
+            <dl class="small mb-3 row">
+              <dt class="col-5 text-muted">Quantity</dt><dd class="col-7 mb-1"><%= d.quantity %></dd>
+              <dt class="col-5 text-muted">Address</dt><dd class="col-7 mb-1"><%= d.address %></dd>
+              <dt class="col-5 text-muted">Phone</dt><dd class="col-7 mb-1"><%= d.phone %></dd>
+              <dt class="col-5 text-muted">Cooked</dt><dd class="col-7 mb-1"><%= d.cookingTime.toLocaleString("en-IN",{ dateStyle:"medium", timeStyle:"short"}) %></dd>
+            </dl>
+
+            <div class="status-desc small mb-2">
+              <% if(d.status==='pending'){ %>
+                <i class="fas fa-clock text-warning me-1"></i> Awaiting review.
+              <% } else if(d.status==='accepted'){ %>
+                <i class="fas fa-check text-success me-1"></i> Accepted. Agent assignment in queue.
+              <% } else if(d.status==='assigned'){ %>
+                <i class="fas fa-truck text-info me-1"></i> Agent <strong><%= d.agent.firstName + " " + d.agent.lastName %></strong> assigned.
+              <% } else if(d.status==='rejected'){ %>
+                <i class="fas fa-times-circle text-danger me-1"></i> Rejected. You may delete it.
+              <% } %>
+            </div>
+
+              <div class="progress mini-progress mb-3">
+              <% 
+                const stages = ['pending','accepted','assigned','collected'];
+                const idx = stages.indexOf(d.status);
+                const percent = idx<0?0: (idx / (stages.length-1))*100;
+              %>
+              <div class="progress-bar" style="width:<%= percent + '%' %>"></div>
+            </div>
+
+            <div class="d-flex gap-2">
+              <% if(d.status==='rejected'){ %>
+                <a href="/donor/donation/deleteRejected/<%= d._id %>" class="btn btn-outline-danger btn-sm">
+                  <i class="fas fa-trash-alt me-1"></i>Delete
+                </a>
+              <% } %>
+              <button class="btn btn-outline-secondary btn-sm copy-btn" data-copy="<%= d.address %>">
+                <i class="fas fa-copy me-1"></i>Address
+              </button>
+            </div>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</main>
+
+<style>
+  .pending-page { background:linear-gradient(135deg,#0d6efd,#198754); min-height:100vh; display:flex; }
+  .glass-bar { background:rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.15); backdrop-filter:blur(12px); border-radius:1.1rem; padding:.85rem 1.2rem; margin:1rem 1rem 0; }
+  .pending-grid { display:grid; gap:1.25rem; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); }
+  .panel { background:#fff; border:1px solid #eef1f4; border-radius:1rem; padding:1.05rem 1.1rem 1rem; position:relative; box-shadow:0 .6rem 1.4rem -0.8rem rgba(0,0,0,.25); transition:.3s; }
+  .panel:hover { transform:translateY(-4px); box-shadow:0 .9rem 1.9rem -0.9rem rgba(0,0,0,.32); }
+  .status-badge { text-transform:capitalize; }
+  .status-badge.pending { background:#fff3cd; color:#856404; }
+  .status-badge.accepted { background:#d1fae5; color:#056d44; }
+  .status-badge.assigned { background:#cff4fc; color:#055160; }
+  .status-badge.rejected { background:#f8d7da; color:#842029; }
+  .mini-progress { height:.45rem; background:#eef2f5; border-radius:.4rem; overflow:hidden; }
+  .mini-progress .progress-bar { background:linear-gradient(90deg,#ffc107,#0dcaf0); }
+  .btn-accent { background:#ffc107; border:none; color:#212529; }
+  .btn-accent:hover { background:#ffca2c; }
+  .empty-state { border:2px dashed rgba(255,255,255,.35); border-radius:1rem; }
+  .copy-btn { position:relative; }
+</style>
+
+<script>
+(function(){
+  const toggler=document.getElementById('sidebar-toggler-btn');
+  if(toggler) toggler.addEventListener('click',()=> document.body.classList.toggle('sidebar-collapsed'));
+
+  document.querySelectorAll('.copy-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      navigator.clipboard.writeText(btn.dataset.copy || '');
+      btn.innerHTML='<i class="fas fa-check me-1"></i>Copied';
+      setTimeout(()=> btn.innerHTML='<i class="fas fa-copy me-1"></i>Address',1500);
+    });
+  });
+
+  const refresh=document.getElementById('refreshPending');
+  if(refresh){
+    refresh.addEventListener('click',()=>{
+      refresh.disabled=true;
+      refresh.innerHTML='<i class="fas fa-spinner fa-spin me-1"></i>Refreshing';
+      setTimeout(()=> location.reload(),600);
+    });
+  }
+})();
+</script>

@@ -1,0 +1,196 @@
+<main class="agent-dashboard">
+  <%- include('../partials/agentSidebar') %>
+
+  <div id="main-wrapper">
+
+    <!-- Top Bar -->
+    <div class="bg-white shadow-sm d-flex align-items-center justify-content-between px-3 py-2 top-bar">
+      <div class="d-flex align-items-center gap-3">
+        <button id="sidebar-toggler-btn" class="btn btn-outline-primary btn-sm"><i class="fas fa-bars"></i></button>
+        <h5 class="m-0 fw-semibold text-primary">Agent Dashboard</h5>
+      </div>
+      <small class="text-muted"><i class="far fa-clock me-1"></i><span id="agentTime"></span></small>
+    </div>
+
+    <div class="container-fluid py-4">
+
+      <% 
+        const nAssigned = Number(numAssignedDonations)||0;
+        const nCollected = Number(numCollectedDonations)||0;
+        const totalHandled = nAssigned + nCollected;
+        const collectedPerc = totalHandled ? Math.round(nCollected / totalHandled * 100) : 0;
+        const remainingPerc = 100 - collectedPerc;
+      %>
+
+      <!-- Stat Cards -->
+      <div class="row g-3 stats-row">
+        <div class="col-12 col-sm-6 col-lg-4">
+          <div class="stat-card gradient-indigo">
+            <div class="icon"><i class="fas fa-clipboard-list"></i></div>
+            <div class="value"><%= totalHandled %></div>
+            <div class="label">Total Assigned (All Time)</div>
+            <div class="mini-progress mt-2">
+              <div class="mini-fill" style="width:<%= collectedPerc %>%"></div>
+            </div>
+            <div class="mini-caption"><%= collectedPerc %>% collected</div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-4">
+          <div class="stat-card gradient-orange">
+            <div class="icon"><i class="fas fa-hourglass-half"></i></div>
+            <div class="value"><%= nAssigned %></div>
+            <div class="label">Pending Collections</div>
+            <div class="delta small mt-2">
+              <i class="fas fa-circle text-warning me-1"></i>Awaiting pickup
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-4">
+          <div class="stat-card gradient-green">
+            <div class="icon"><i class="fas fa-check-circle"></i></div>
+            <div class="value"><%= nCollected %></div>
+            <div class="label">Collected Donations</div>
+            <div class="delta small mt-2">
+              <i class="fas fa-arrow-up text-light me-1"></i>Efficiency: <strong><%= collectedPerc %>%</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Workload & Actions -->
+      <div class="row g-3 mt-1">
+        <div class="col-12 col-lg-8">
+          <div class="panel h-100">
+            <div class="panel-head d-flex align-items-center">
+              <h6 class="m-0 fw-semibold"><i class="fas fa-route me-2 text-success"></i>Current Load</h6>
+            </div>
+            <div class="panel-body">
+              <div class="progress-stacked mb-3">
+                <div class="seg collected" style="width:<%= collectedPerc %>%">
+                  <span><%= collectedPerc %>% Collected</span>
+                </div>
+                <div class="seg pending" style="width:<%= remainingPerc %>%">
+                  <span><%= remainingPerc %>% Pending</span>
+                </div>
+              </div>
+              <div class="small text-muted mb-3">
+                This shows proportion of collected vs still pending from all assignments (lifetime basis in this session).
+              </div>
+
+              <div class="row g-3 quick-metrics">
+                <div class="col-6 col-md-4">
+                  <div class="q-box">
+                    <div class="q-label">Total</div>
+                    <div class="q-value"><%= totalHandled %></div>
+                  </div>
+                </div>
+                <div class="col-6 col-md-4">
+                  <div class="q-box">
+                    <div class="q-label">Collected</div>
+                    <div class="q-value text-success"><%= nCollected %></div>
+                  </div>
+                </div>
+                <div class="col-6 col-md-4">
+                  <div class="q-box">
+                    <div class="q-label">Pending</div>
+                    <div class="q-value text-warning"><%= nAssigned %></div>
+                  </div>
+                </div>
+              </div>
+
+              <hr class="my-4">
+
+              <div class="actions d-flex flex-wrap gap-2">
+                <a href="/agent/pending" class="btn btn-outline-primary btn-sm"><i class="fas fa-clock me-1"></i>Pending Collections</a>
+                <a href="/agent/collections" class="btn btn-outline-success btn-sm"><i class="fas fa-history me-1"></i>Previous Collections</a>
+                <a href="/agent/profile" class="btn btn-outline-dark btn-sm"><i class="fas fa-user-cog me-1"></i>Profile</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Guidance -->
+        <div class="col-12 col-lg-4">
+          <div class="panel h-100">
+            <div class="panel-head">
+              <h6 class="m-0 fw-semibold"><i class="fas fa-lightbulb me-2 text-info"></i>Tips</h6>
+            </div>
+            <div class="panel-body small tips">
+              <div><i class="fas fa-check text-success me-2"></i>Confirm pickup status promptly.</div>
+              <div><i class="fas fa-temperature-low text-primary me-2"></i>Verify food safety & packaging.</div>
+              <div><i class="fas fa-route text-warning me-2"></i>Plan an efficient route before starting.</div>
+              <div><i class="fas fa-headset text-secondary me-2"></i>Contact donor if address unclear.</div>
+              <div><i class="fas fa-sync text-indigo me-2"></i>Refresh page to see new assignments.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /container -->
+  </div>
+</main>
+
+<style>
+.agent-dashboard { background:#f3f6fb; min-height:100vh; }
+.top-bar { position:sticky; top:0; z-index:10; }
+
+.stats-row .stat-card {
+  position:relative; overflow:hidden; border-radius:1rem; padding:1rem 1.15rem 1.1rem;
+  color:#fff; box-shadow:0 8px 18px -8px rgba(0,0,0,.25); backdrop-filter:blur(4px);
+}
+.stat-card .icon { position:absolute; top:.75rem; right:.85rem; font-size:1.7rem; opacity:.25; }
+.stat-card .value { font-size:2.15rem; line-height:1.1; font-weight:700; }
+.stat-card .label { text-transform:uppercase; font-size:.6rem; letter-spacing:1px; opacity:.9; font-weight:600; }
+.stat-card .delta { font-size:.65rem; letter-spacing:.5px; font-weight:600; opacity:.85; }
+
+.gradient-indigo { background:linear-gradient(135deg,#6366f1,#4f46e5); }
+.gradient-orange { background:linear-gradient(135deg,#f59e0b,#d97706); }
+.gradient-green { background:linear-gradient(135deg,#198754,#0d6f46); }
+
+.mini-progress { height:6px; background:rgba(255,255,255,.25); border-radius:3px; overflow:hidden; margin-top:.35rem; }
+.mini-fill { height:100%; background:rgba(255,255,255,.9); }
+.mini-caption { font-size:.55rem; margin-top:.25rem; opacity:.85; font-weight:600; letter-spacing:.6px; }
+
+.panel { background:#fff; border:1px solid #e4e9f1; border-radius:1rem; box-shadow:0 4px 14px -6px rgba(0,0,0,.08); }
+.panel-head { padding:.75rem 1rem; border-bottom:1px solid #eef1f6; background:linear-gradient(90deg,#f8fafc,#f1f5f9); border-radius:1rem 1rem 0 0; }
+.panel-body { padding:1.1rem 1.15rem 1.25rem; }
+
+.progress-stacked {
+  display:flex; width:100%; border:1px solid #e5eaf1; border-radius:.75rem; overflow:hidden;
+  background:#f1f5f9; height:40px; font-size:.65rem; font-weight:600; letter-spacing:.5px;
+}
+.progress-stacked .seg {
+  display:flex; align-items:center; justify-content:center; padding:0 .5rem; white-space:nowrap;
+  transition:width .6s ease;
+}
+.progress-stacked .seg.collected { background:linear-gradient(90deg,#16a34a,#15803d); color:#fff; }
+.progress-stacked .seg.pending { background:linear-gradient(90deg,#f59e0b,#d97706); color:#fff; }
+
+.quick-metrics .q-box {
+  background:#fff; border:1px solid #e5eaf1; border-radius:.8rem; padding:.7rem .75rem;
+  text-align:center; box-shadow:0 4px 10px -6px rgba(0,0,0,.08);
+}
+.q-box .q-label { font-size:.55rem; text-transform:uppercase; letter-spacing:.8px; font-weight:700; color:#64748b; }
+.q-box .q-value { font-size:1.25rem; font-weight:700; line-height:1.15; }
+
+.tips > div { padding:.4rem 0; border-bottom:1px dashed #e3e7ef; }
+.tips > div:last-child { border-bottom:0; }
+
+.btn-outline-primary, .btn-outline-success, .btn-outline-dark {
+  --bs-btn-font-size:.7rem; --bs-btn-padding-y:.4rem; --bs-btn-padding-x:.65rem;
+}
+
+@media (max-width: 991.98px){
+  .stat-card .value { font-size:1.9rem; }
+  .progress-stacked { height:46px; flex-direction:column; }
+  .progress-stacked .seg { width:100%!important; height:50%; }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const t=document.getElementById('agentTime');
+  function upd(){ if(t) t.textContent=new Date().toLocaleString(); }
+  upd(); setInterval(upd,60000);
+});
+</script>

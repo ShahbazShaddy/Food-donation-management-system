@@ -1,0 +1,125 @@
+<main class="agent-profile">
+  <%- include('../partials/agentSidebar') %>
+  <div id="main-wrapper">
+
+    <div class="bg-white shadow-sm d-flex align-items-center justify-content-between px-3 py-2 top-bar">
+      <div class="d-flex align-items-center gap-3">
+        <button id="sidebar-toggler-btn" class="btn btn-outline-primary btn-sm"><i class="fas fa-bars"></i></button>
+        <h5 class="m-0 fw-semibold text-primary">Profile</h5>
+      </div>
+      <small class="text-muted"><i class="far fa-clock me-1"></i><span id="agentProfTime"></span></small>
+    </div>
+
+    <div class="container-fluid py-4">
+      <div class="row g-4">
+        <div class="col-12 col-lg-4">
+          <div class="panel h-100">
+            <div class="panel-head">
+              <h6 class="m-0 fw-semibold"><i class="fas fa-id-badge me-2 text-primary"></i>Overview</h6>
+            </div>
+            <div class="panel-body d-flex flex-column align-items-center text-center">
+              <div class="avatar-xl mb-3">
+                <span><%= currentUser.firstName[0].toUpperCase() %></span>
+              </div>
+              <h5 class="fw-semibold mb-0"><%= currentUser.firstName %> <%= currentUser.lastName %></h5>
+              <div class="text-muted small mb-3"><i class="fas fa-envelope me-1"></i><%= currentUser.email %></div>
+              <div class="list w-100 text-start small">
+                <div class="item"><i class="fas fa-venus-mars me-2 text-secondary"></i>Gender:
+                  <span class="fw-semibold text-dark"><%= currentUser.gender || '—' %></span>
+                </div>
+                <div class="item"><i class="fas fa-phone me-2 text-secondary"></i>Phone:
+                  <span class="fw-semibold text-dark"><%= currentUser.phone || '—' %></span>
+                </div>
+                <div class="item"><i class="fas fa-map-marker-alt me-2 text-secondary"></i>Address:
+                  <span class="fw-semibold text-dark"><%= currentUser.address || '—' %></span>
+                </div>
+              </div>
+              <div class="mt-auto small text-muted">
+                <i class="fas fa-shield-alt me-1"></i>Role: Agent
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-lg-8">
+          <div class="panel">
+            <div class="panel-head d-flex align-items-center">
+              <h6 class="m-0 fw-semibold"><i class="fas fa-user-cog me-2 text-success"></i>Edit Profile</h6>
+            </div>
+            <div class="panel-body">
+              <form action="/agent/profile?_method=PUT" method="POST" class="profile-form">
+                <div class="row g-3">
+                  <div class="col-sm-6">
+                    <label class="form-label small fw-semibold">First Name</label>
+                    <input type="text" name="agent[firstName]" class="form-control form-control-sm" value="<%= currentUser.firstName %>" required>
+                  </div>
+                  <div class="col-sm-6">
+                    <label class="form-label small fw-semibold">Last Name</label>
+                    <input type="text" name="agent[lastName]" class="form-control form-control-sm" value="<%= currentUser.lastName %>" required>
+                  </div>
+                  <div class="col-sm-6">
+                    <label class="form-label small fw-semibold">Email (locked)</label>
+                    <input type="email" class="form-control form-control-sm" value="<%= currentUser.email %>" disabled>
+                  </div>
+                  <div class="col-sm-6">
+                    <label class="form-label small fw-semibold d-block">Gender</label>
+                    <div class="d-flex gap-3">
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="agent[gender]" id="male" value="male" <%= currentUser.gender==='male'?'checked':'' %>>
+                        <label for="male" class="form-check-label small">Male</label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="agent[gender]" id="female" value="female" <%= currentUser.gender==='female'?'checked':'' %>>
+                        <label for="female" class="form-check-label small">Female</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label small fw-semibold">Address</label>
+                    <input type="text" name="agent[address]" class="form-control form-control-sm" value="<%= currentUser.address %>">
+                  </div>
+                  <div class="col-sm-6">
+                    <label class="form-label small fw-semibold">Phone</label>
+                    <input type="tel" pattern="[0-9]{7,15}" name="agent[phone]" class="form-control form-control-sm" value="<%= currentUser.phone %>" placeholder="Digits only">
+                  </div>
+                  <div class="col-sm-6 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary btn-sm w-100"><i class="fas fa-save me-1"></i>Update</button>
+                  </div>
+                </div>
+              </form>
+              <hr class="my-4">
+              <div class="small text-muted">
+                <i class="fas fa-info-circle me-1"></i>Changes apply after saving.
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<style>
+.agent-profile { background:#f3f6fb; min-height:100vh; }
+.top-bar { position:sticky; top:0; z-index:10; }
+.panel { background:#fff;border:1px solid #e5eaf1;border-radius:1rem;box-shadow:0 6px 18px -8px rgba(0,0,0,.08); }
+.panel-head { padding:.85rem 1.1rem;border-bottom:1px solid #eef2f6;background:linear-gradient(90deg,#f8fafc,#f1f5f9);border-radius:1rem 1rem 0 0; }
+.panel-body { padding:1.1rem 1.15rem 1.3rem; }
+.avatar-xl { width:110px;height:110px;border-radius:28px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;font-weight:700;font-size:2.4rem;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 6px #fff,0 8px 22px -10px rgba(0,0,0,.35); }
+.list .item { padding:.35rem 0; border-bottom:1px dashed #e2e8f0; }
+.list .item:last-child { border-bottom:0; }
+.profile-form input.form-control-sm { font-size:.8rem; }
+.form-control:focus { box-shadow:none;border-color:#6366f1; }
+.btn-primary { background:#6366f1;border-color:#6366f1; }
+.btn-primary:hover { background:#4f46e5; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const t=document.getElementById('agentProfTime');
+  function upd(){ if(t) t.textContent=new Date().toLocaleString(); }
+  upd(); setInterval(upd,60000);
+});
+</script>

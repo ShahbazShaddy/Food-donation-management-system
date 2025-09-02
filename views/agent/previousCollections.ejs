@@ -1,0 +1,215 @@
+<main class="agent-prev">
+  <%- include('../partials/agentSidebar') %>
+  <div id="main-wrapper">
+
+    <!-- Top Bar -->
+    <div class="bg-white shadow-sm d-flex align-items-center justify-content-between px-3 py-2 top-bar">
+      <div class="d-flex align-items-center gap-3">
+        <button id="sidebar-toggler-btn" class="btn btn-outline-primary btn-sm"><i class="fas fa-bars"></i></button>
+        <h5 class="m-0 fw-semibold text-primary">Previous Collections</h5>
+      </div>
+      <small class="text-muted"><i class="far fa-clock me-1"></i><span id="pcollTime"></span></small>
+    </div>
+
+    <div class="container-fluid py-4">
+
+      <!-- Stats + Filters -->
+      <div class="row g-3 mb-3 align-items-end">
+        <div class="col-12 col-md-7">
+          <div class="chips-wrap">
+            <div class="chip gradient-indigo">
+              <span class="chip-label">Total</span>
+              <span class="chip-value"><%= previousCollections.length %></span>
+            </div>
+            <% 
+              // Count unique donors
+              const donorIds = new Set();
+              previousCollections.forEach(c=> donorIds.add(String(c.donor._id)));
+            %>
+            <div class="chip gradient-green">
+              <span class="chip-label">Donors</span>
+              <span class="chip-value"><%= donorIds.size %></span>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-md-5">
+          <div class="d-flex gap-2 flex-wrap justify-content-md-end">
+            <div class="input-group input-group-sm search-box">
+              <span class="input-group-text bg-white"><i class="fas fa-search text-secondary"></i></span>
+              <input id="searchPrevColl" type="text" class="form-control" placeholder="Search donor / address / phone">
+              <button class="btn btn-outline-secondary" id="clearPrevColl" type="button"><i class="fas fa-times"></i></button>
+            </div>
+            <button class="btn btn-sm btn-outline-primary" id="exportCSV"><i class="fas fa-file-export me-1"></i>CSV</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="panel">
+        <div class="panel-head d-flex flex-wrap gap-2 align-items-center">
+          <h6 class="m-0 fw-semibold"><i class="fas fa-archive me-2 text-primary"></i>Collection History</h6>
+          <div class="small ms-auto text-muted">
+            Showing <span id="visiblePrevColl"><%= previousCollections.length %></span> of <%= previousCollections.length %>
+          </div>
+        </div>
+        <div class="panel-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 table-prev-coll">
+              <thead>
+                <tr>
+                  <th style="width:55px" class="sortable" data-sort="idx">#</th>
+                  <th class="sortable" data-sort="donor">Donor</th>
+                  <th class="sortable" data-sort="addr">Address</th>
+                  <th class="sortable" data-sort="phone">Phone</th>
+                  <th style="width:110px" class="text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody id="prevCollBody">
+              <% if(previousCollections.length === 0){ %>
+                <tr>
+                  <td colspan="5" class="text-center py-5">
+                    <div class="text-muted">
+                      <i class="fas fa-clipboard-list fa-2x mb-3 opacity-50"></i>
+                      <p class="m-0">No previous collections.</p>
+                    </div>
+                  </td>
+                </tr>
+              <% } else { %>
+                <% for(let i=0;i<previousCollections.length;i++){ const c = previousCollections[i]; %>
+                  <tr data-row
+                      data-donor="<%= (c.donor.firstName+' '+c.donor.lastName).toLowerCase() %>"
+                      data-addr="<%= (c.address||'').toLowerCase() %>"
+                      data-phone="<%= String(c.phone||'').toLowerCase() %>">
+                    <td class="fw-semibold text-muted"><%= i+1 %></td>
+                    <td>
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="avatar-sm"><span><%= c.donor.firstName[0].toUpperCase() %></span></div>
+                        <div class="lh-1">
+                          <span class="fw-semibold donor-name"><%= c.donor.firstName %> <%= c.donor.lastName %></span>
+                          <small class="text-muted d-block"><%= c.donor.email %></small>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="small"><span class="addr"><%= c.address %></span></td>
+                    <td class="small"><%= c.phone %></td>
+                    <td class="text-center">
+                      <a href="/agent/collection/view/<%= c._id %>" class="btn btn-sm btn-outline-primary">
+                        View
+                      </a>
+                    </td>
+                  </tr>
+                <% } %>
+              <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="small text-muted mt-3">
+        <i class="fas fa-info-circle me-1"></i>Click headers to sort. Search filters instantly.
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<style>
+.agent-prev { background:#f3f6fb; min-height:100vh; }
+.top-bar { position:sticky; top:0; z-index:10; }
+.panel { background:#fff; border:1px solid #e5eaf1; border-radius:1rem; box-shadow:0 6px 18px -8px rgba(0,0,0,.08); }
+.panel-head { padding:.85rem 1.1rem; border-bottom:1px solid #eef2f6; background:linear-gradient(90deg,#f8fafc,#f1f5f9); }
+.table-prev-coll thead th { font-size:.65rem; text-transform:uppercase; letter-spacing:.7px; font-weight:600; background:#f1f5f9; cursor:pointer; }
+.table-prev-coll tbody tr { transition:background .25s; }
+.table-prev-coll tbody tr:hover { background:#f5faff; }
+.search-box { box-shadow:0 4px 12px -6px rgba(0,0,0,.15); border-radius:.6rem; overflow:hidden; }
+.chips-wrap { display:flex; flex-wrap:wrap; gap:.6rem; }
+.chip { background:#1d4ed8; color:#fff; padding:.55rem .85rem; border-radius:.75rem; display:flex; align-items:center; gap:.55rem; font-weight:600; font-size:.8rem; letter-spacing:.5px; box-shadow:0 4px 10px -4px rgba(0,0,0,.25); }
+.chip-label { text-transform:uppercase; opacity:.85; font-size:.6rem; letter-spacing:.8px; }
+.chip-value { font-size:1.05rem; line-height:1; }
+.gradient-indigo { background:linear-gradient(135deg,#6366f1,#4f46e5); }
+.gradient-green { background:linear-gradient(135deg,#198754,#0d6f46); }
+.avatar-sm { width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:.9rem; }
+.sortable:after { content:"\f0dc"; font-family:"Font Awesome 6 Free"; font-weight:900; font-size:.55rem; opacity:.4; margin-left:.35rem; }
+.sortable.sorted-asc:after { content:"\f160"; opacity:.85; }
+.sortable.sorted-desc:after { content:"\f161"; opacity:.85; }
+@media (max-width: 767.98px){
+  .chip { font-size:.7rem; padding:.5rem .7rem; }
+  .chip-value { font-size:.9rem; }
+  .panel-head { flex-direction:column; align-items:flex-start!important; gap:.5rem; }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const t=document.getElementById('pcollTime');
+  function upd(){ if(t) t.textContent=new Date().toLocaleString(); }
+  upd(); setInterval(upd,60000);
+
+  const rows=[...document.querySelectorAll('#prevCollBody tr[data-row]')];
+  const visibleEl=document.getElementById('visiblePrevColl');
+  const search=document.getElementById('searchPrevColl');
+  const clearBtn=document.getElementById('clearPrevColl');
+
+  function filter(){
+    const q=(search.value||'').toLowerCase().trim();
+    let vis=0;
+    rows.forEach(r=>{
+      if(!q){
+        r.style.display=''; vis++; return;
+      }
+      const hay=r.dataset.donor+' '+r.dataset.addr+' '+r.dataset.phone;
+      const show=hay.includes(q);
+      r.style.display= show ? '' : 'none';
+      if(show) vis++;
+    });
+    if(visibleEl) visibleEl.textContent=vis;
+  }
+  if(search) search.addEventListener('input',filter);
+  if(clearBtn) clearBtn.addEventListener('click',()=>{ search.value=''; filter(); search.focus(); });
+
+  // Sorting
+  document.querySelectorAll('.table-prev-coll thead th.sortable').forEach(th=>{
+    th.addEventListener('click',()=>{
+      const key=th.dataset.sort;
+      const current= th.classList.contains('sorted-asc')?'asc': th.classList.contains('sorted-desc')?'desc':'';
+      document.querySelectorAll('.table-prev-coll thead th.sortable').forEach(h=>h.classList.remove('sorted-asc','sorted-desc'));
+      const dir=current==='asc'?'desc':'asc';
+      th.classList.add(dir==='asc'?'sorted-asc':'sorted-desc');
+      const mult=dir==='asc'?1:-1;
+      const getVal=tr=>{
+        if(key==='idx') return parseInt(tr.querySelector('td,th').textContent)||0;
+        if(key==='donor') return tr.dataset.donor;
+        if(key==='addr') return tr.dataset.addr;
+        if(key==='phone') return tr.dataset.phone;
+        return '';
+      };
+      rows.sort((a,b)=>{
+        const va=getVal(a), vb=getVal(b);
+        if(va<vb) return -1*mult;
+        if(va>vb) return 1*mult;
+        return 0;
+      }).forEach(r=>r.parentNode.appendChild(r));
+    });
+  });
+
+  // Export CSV
+  document.getElementById('exportCSV')?.addEventListener('click',()=>{
+    const head=['Index','Donor','Address','Phone'];
+    const lines=[head.join(',')];
+    [...document.querySelectorAll('#prevCollBody tr[data-row]')].forEach((tr,idx)=>{
+      if(tr.style.display==='none') return;
+      const donor=tr.dataset.donor.replace(/,/g,' ');
+      const addr=tr.dataset.addr.replace(/,/g,' ');
+      const phone=tr.dataset.phone;
+      lines.push([idx+1, donor, '"'+addr+'"', phone].join(','));
+    });
+    const blob=new Blob([lines.join('\n')],{type:'text/csv'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='previous_collections.csv';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+});
+</script>

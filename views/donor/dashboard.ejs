@@ -1,0 +1,245 @@
+<main class="donor-dashboard">
+  <%- include('../partials/donorSidebar') %>
+
+  <div id="main-wrapper" class="dashboard-wrapper">
+    <!-- Top Bar -->
+    <div class="topbar d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div class="d-flex align-items-center gap-3">
+        <button id="sidebar-toggler-btn" class="btn btn-icon btn-outline-light border-0 shadow-sm" aria-label="Toggle sidebar">
+          <i class="fas fa-bars"></i>
+        </button>
+        <h5 class="m-0 fw-bold text-white">Donor Dashboard</h5>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="/donor/donate" class="btn btn-accent fw-semibold"><i class="fas fa-gift me-2"></i>New Donation</a>
+        <a href="/donor/donations/pending" class="btn btn-outline-light fw-semibold"><i class="fas fa-clock me-2"></i>Pending</a>
+        <button id="refreshMetricsBtn" class="btn btn-outline-light fw-semibold"><i class="fas fa-sync-alt me-2"></i>Refresh</button>
+      </div>
+    </div>
+
+    <!-- Metrics -->
+    <section class="metrics-grid mt-4">
+      <div class="metric-card gradient-primary">
+        <div class="metric-icon"><i class="fas fa-hand-holding-heart"></i></div>
+        <div class="metric-body">
+          <div class="metric-value"><%= numCollectedDonations %></div>
+          <div class="metric-label">Collected</div>
+          <div class="metric-sub text-white-50 small">Completed pickups</div>
+        </div>
+      </div>
+      <div class="metric-card gradient-warning">
+        <div class="metric-icon"><i class="fas fa-hourglass-half"></i></div>
+        <div class="metric-body">
+          <div class="metric-value"><%= numPendingDonations %></div>
+          <div class="metric-label">Pending</div>
+          <div class="metric-sub text-white-50 small">Awaiting review</div>
+        </div>
+      </div>
+      <div class="metric-card gradient-success">
+        <div class="metric-icon"><i class="fas fa-check-circle"></i></div>
+        <div class="metric-body">
+          <div class="metric-value"><%= numAcceptedDonations %></div>
+          <div class="metric-label">Accepted</div>
+          <div class="metric-sub text-white-50 small">Preparing assignment</div>
+        </div>
+      </div>
+      <div class="metric-card gradient-danger">
+        <div class="metric-icon"><i class="fas fa-truck-loading"></i></div>
+        <div class="metric-body">
+          <div class="metric-value"><%= numAssignedDonations %></div>
+          <div class="metric-label">Assigned</div>
+          <div class="metric-sub text-white-50 small">Agent en route</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Progress Summary (Removed chart panel) -->
+    <section class="row g-4 mt-1">
+      <div class="col-12">
+        <div class="panel h-100">
+          <div class="panel-header">
+            <h6 class="panel-title mb-0">Progress Summary</h6>
+          </div>
+          <div class="panel-body">
+            <div class="progress-row mb-3">
+              <div class="d-flex justify-content-between small mb-1">
+                <span>Accepted (Waiting)</span><span id="acceptedPerc">0%</span>
+              </div>
+              <div class="progress progress-thin">
+                <div class="progress-bar bg-success" id="acceptedBar"></div>
+              </div>
+            </div>
+            <div class="progress-row mb-3">
+              <div class="d-flex justify-content-between small mb-1">
+                <span>Assigned (In Transit)</span><span id="assignedPerc">0%</span>
+              </div>
+              <div class="progress progress-thin">
+                <div class="progress-bar bg-danger" id="assignedBar"></div>
+              </div>
+            </div>
+            <div class="progress-row mb-3">
+              <div class="d-flex justify-content-between small mb-1">
+                <span>Collected (Completed)</span><span id="collectedPerc">0%</span>
+              </div>
+              <div class="progress progress-thin">
+                <div class="progress-bar bg-primary" id="collectedBar"></div>
+              </div>
+            </div>
+            <div class="alert alert-info small mb-0">
+              <i class="fas fa-info-circle me-2"></i>
+              Based on your current totals.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tips Only (Activity removed) -->
+    <section class="row g-4 mt-1">
+      <div class="col-12">
+        <div class="panel">
+          <div class="panel-header">
+            <h6 class="panel-title mb-0">Optimization Tips</h6>
+          </div>
+            <div class="panel-body">
+              <ul class="list-unstyled small tip-list m-0">
+                <li><i class="fas fa-temperature-low text-primary me-2"></i>Log cooking time accurately for safe redistribution.</li>
+                <li><i class="fas fa-balance-scale text-success me-2"></i>Add servings or weight for faster matching.</li>
+                <li><i class="fas fa-phone-alt text-warning me-2"></i>Stay reachable until pickup completes.</li>
+                <li><i class="fas fa-map-marker-alt text-danger me-2"></i>Verify address before submitting.</li>
+                <li><i class="fas fa-sync-alt text-info me-2"></i>Refresh to see assignment updates.</li>
+              </ul>
+              <div class="alert alert-warning mt-4 small mb-0">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                For unusually long pending times contact support.
+              </div>
+            </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="mt-4">
+      <div class="impact-cta position-relative overflow-hidden rounded-4 p-4 p-md-5">
+        <div class="row align-items-center">
+          <div class="col-lg-8">
+            <h4 class="fw-bold text-white mb-2">Increase Your Impact</h4>
+            <p class="text-white-50 mb-4 small">
+              Bundle similar items and submit earlier to streamline pickups.
+            </p>
+            <a href="/donor/donate" class="btn btn-light fw-semibold me-2 btn-sm">Donate Again</a>
+            <a href="/home/mission" class="btn btn-outline-light fw-semibold btn-sm">View Mission</a>
+          </div>
+          <div class="col-lg-4 d-none d-lg-block">
+            <div class="text-white small opacity-75">
+              <div class="mb-2"><i class="fas fa-bolt me-2"></i>Efficient routing enabled.</div>
+              <div class="mb-2"><i class="fas fa-shipping-fast me-2"></i>Pickup windows improving.</div>
+              <div><i class="fas fa-heart me-2"></i>Your contributions matter.</div>
+            </div>
+          </div>
+        </div>
+        <div class="impact-overlay"></div>
+      </div>
+    </section>
+
+    <p class="small text-muted text-center mt-4 mb-0">
+      Need help? Visit Pending Donations or Profile.
+    </p>
+    <div class="pb-4"></div>
+  </div>
+</main>
+
+<style>
+  :root { --dash-radius:1.1rem; --panel-bg:#ffffff; --panel-border:#eef1f4; }
+  .donor-dashboard { background:linear-gradient(135deg,#0d6efd 0%,#198754 70%); min-height:100vh; display:flex; }
+  #main-wrapper.dashboard-wrapper { flex:1; padding:1rem 1.25rem 0; }
+  .topbar { background:rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.15); backdrop-filter:blur(12px); border-radius:var(--dash-radius); padding:.95rem 1.25rem; }
+
+  .metrics-grid { display:grid; gap:1.1rem; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); }
+  .metric-card { position:relative; border-radius:1rem; padding:1rem; color:#fff; display:flex; gap:.85rem; align-items:center; box-shadow:0 .65rem 1.8rem -1rem rgba(0,0,0,.4); transition:.35s; overflow:hidden; }
+  .metric-card:before { content:""; position:absolute; inset:0; background:radial-gradient(circle at 75% 25%,rgba(255,255,255,.35),transparent 60%); mix-blend-mode:overlay; opacity:.45; }
+  .metric-card:hover { transform:translateY(-4px); box-shadow:0 1rem 2.25rem -1rem rgba(0,0,0,.45); }
+  .metric-icon { width:50px; height:50px; border-radius:18px; background:rgba(255,255,255,.18); display:flex; align-items:center; justify-content:center; font-size:1.35rem; backdrop-filter:blur(4px); }
+  .metric-value { font-size:2rem; font-weight:700; line-height:1; letter-spacing:-1px; }
+  .metric-label { font-weight:600; margin-top:.25rem; }
+  .gradient-primary { background:linear-gradient(135deg,#2563eb,#1d4ed8); }
+  .gradient-success { background:linear-gradient(135deg,#0dbe7e,#0a8f5f); }
+  .gradient-warning { background:linear-gradient(135deg,#f59e0b,#d97706); }
+  .gradient-danger { background:linear-gradient(135deg,#ef4444,#dc2626); }
+
+  .panel { background:var(--panel-bg); border:1px solid var(--panel-border); border-radius:1.2rem; padding:1.15rem 1.25rem; display:flex; flex-direction:column; box-shadow:0 .25rem 1rem -0.5rem rgba(0,0,0,.15); position:relative; overflow:hidden; }
+  .panel:before { content:""; position:absolute; inset:0; background:radial-gradient(circle at 90% 10%,rgba(0,0,0,.04),transparent 55%); pointer-events:none; }
+  .panel-header { display:flex; flex-direction:column; margin-bottom:.9rem; }
+  .panel-title { font-weight:600; }
+  .panel-body { flex:1; }
+
+  .progress-thin { height:.6rem; background:#eef1f5; border-radius:.5rem; overflow:hidden; }
+  .progress-bar { width:0; transition:width .9s cubic-bezier(.65,.05,.36,1); }
+
+  .tip-list li { margin-bottom:.6rem; display:flex; line-height:1.2; }
+  .tip-list li i { margin-top:2px; }
+
+  .impact-cta { background:linear-gradient(135deg,#198754,#0d6efd); box-shadow:0 .75rem 2rem -1rem rgba(0,0,0,.4); }
+  .impact-overlay { position:absolute; inset:0; background:
+      radial-gradient(circle at 15% 85%,rgba(255,255,255,.15),transparent 60%),
+      radial-gradient(circle at 85% 20%,rgba(255,255,255,.17),transparent 65%),
+      repeating-linear-gradient(-45deg,rgba(255,255,255,.06)0 14px,transparent 14px 28px);
+    mix-blend-mode:overlay; opacity:.9; pointer-events:none; }
+
+  .btn-accent { background:#ffc107; border:none; color:#212529; }
+  .btn-accent:hover { background:#ffca2c; color:#212529; }
+  .btn-icon { width:42px; height:42px; display:inline-flex; align-items:center; justify-content:center; }
+
+  @media (max-width: 992px){
+    #main-wrapper.dashboard-wrapper { padding:1rem .75rem 0; }
+    .topbar { padding:.85rem .9rem; }
+    .metric-card { padding:.9rem; }
+    .metric-value { font-size:1.65rem; }
+  }
+  @media (max-width: 576px){
+    .topbar h5 { font-size:1rem; }
+    .panel { padding:1rem; }
+  }
+</style>
+
+<script>
+  (function(){
+    const toggler = document.getElementById('sidebar-toggler-btn');
+    if(toggler){
+      toggler.addEventListener('click', ()=> {
+        document.body.classList.toggle('sidebar-collapsed');
+      });
+    }
+
+    // Metrics percentages
+    const counts = {
+      collected: Number('<%= numCollectedDonations %>') || 0,
+      pending: Number('<%= numPendingDonations %>') || 0,
+      accepted: Number('<%= numAcceptedDonations %>') || 0,
+      assigned: Number('<%= numAssignedDonations %>') || 0
+    };
+    const totalActive = counts.pending + counts.accepted + counts.assigned + counts.collected;
+    const pct = v => totalActive ? Math.round((v/totalActive)*100) : 0;
+
+    const acceptedPerc = pct(counts.accepted);
+    const assignedPerc = pct(counts.assigned);
+    const collectedPerc = pct(counts.collected);
+
+    document.getElementById('acceptedBar').style.width = acceptedPerc + '%';
+    document.getElementById('assignedBar').style.width = assignedPerc + '%';
+    document.getElementById('collectedBar').style.width = collectedPerc + '%';
+
+    document.getElementById('acceptedPerc').textContent = acceptedPerc + '%';
+    document.getElementById('assignedPerc').textContent = assignedPerc + '%';
+    document.getElementById('collectedPerc').textContent = collectedPerc + '%';
+
+    const refreshBtn = document.getElementById('refreshMetricsBtn');
+    if(refreshBtn){
+      refreshBtn.addEventListener('click', ()=>{
+        refreshBtn.disabled = true;
+        refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Refreshing';
+        setTimeout(()=> window.location.reload(), 600);
+      });
+    }
+  })();
+</script>

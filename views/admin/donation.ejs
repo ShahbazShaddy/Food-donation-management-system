@@ -1,0 +1,220 @@
+<main class="admin-donation">
+  <%- include('../partials/adminSidebar') %>
+  <div id="main-wrapper">
+    <div class="top-bar bg-white shadow-sm d-flex align-items-center justify-content-between px-3 py-2">
+      <div class="d-flex align-items-center gap-3">
+        <button id="sidebar-toggler-btn" class="btn btn-outline-primary btn-sm"><i class="fas fa-bars"></i></button>
+        <h5 class="m-0 fw-semibold text-primary">Donation Detail</h5>
+      </div>
+      <small class="text-muted"><i class="far fa-clock me-1"></i><%= new Date().toLocaleString() %></small>
+    </div>
+
+    <div class="container-fluid py-4">
+      <div class="detail-grid">
+        <div class="panel main-info">
+          <div class="panel-head">
+            <h6 class="m-0 fw-semibold"><i class="fas fa-box-open me-2 text-primary"></i>Summary</h6>
+          </div>
+          <div class="panel-body">
+            <div class="row g-3">
+              <div class="col-12 col-md-6">
+                <div class="meta">
+                  <div class="label">Donor</div>
+                  <div class="value">
+                    <i class="fas fa-user text-secondary me-1"></i>
+                    <%= donation.donor.firstName + " " + donation.donor.lastName %>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="meta">
+                  <div class="label">Food Type</div>
+                  <div class="value"><span class="pill"><i class="fas fa-utensils me-1"></i><%= donation.foodType %></span></div>
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="meta">
+                  <div class="label">Quantity</div>
+                  <div class="value"><span class="qty"><%= donation.quantity %></span></div>
+                </div>
+              </div>
+              <div class="col-6 col-md-4">
+                <div class="meta">
+                  <div class="label">Cooked At</div>
+                  <div class="value small"><%= donation.cookingTime.toLocaleString("en-IN",{ dateStyle:"medium", timeStyle:"short"}) %></div>
+                </div>
+              </div>
+              <div class="col-6 col-md-4">
+                <div class="meta">
+                  <div class="label">Phone</div>
+                  <div class="value"><i class="fas fa-phone me-1 text-secondary"></i><%= donation.phone %></div>
+                </div>
+              </div>
+              <div class="col-12 col-md-4">
+                <div class="meta">
+                  <div class="label">Status</div>
+                  <div class="value">
+                    <span class="status-badge <%= donation.status %>">
+                      <i class="fas fa-circle me-1"></i><%= donation.status %>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <% if(donation.status == "assigned") { %>
+              <div class="col-12 col-md-6">
+                <div class="meta">
+                  <div class="label">Agent</div>
+                  <div class="value">
+                    <i class="fas fa-truck text-secondary me-1"></i>
+                    <%= donation.agent.firstName + " " + donation.agent.lastName %>
+                  </div>
+                </div>
+              </div>
+              <% } %>
+              <% if(donation.status == "collected") { %>
+              <div class="col-12 col-md-6">
+                <div class="meta">
+                  <div class="label">Collected At</div>
+                  <div class="value small">
+                    <i class="fas fa-check-circle text-success me-1"></i>
+                    <%= donation.collectionTime.toLocaleString("en-IN",{ dateStyle:"medium", timeStyle:"short"}) %>
+                  </div>
+                </div>
+              </div>
+              <% } %>
+              <div class="col-12">
+                <div class="meta">
+                  <div class="label">Address</div>
+                  <div class="value small text-wrap">
+                    <i class="fas fa-location-dot text-danger me-1"></i>
+                    <%= donation.address %>
+                  </div>
+                </div>
+              </div>
+              <% if(donation.donorToAdminMsg) { %>
+              <div class="col-12">
+                <div class="meta">
+                  <div class="label">Donor Message</div>
+                  <div class="note"><%= donation.donorToAdminMsg %></div>
+                </div>
+              </div>
+              <% } %>
+              <% if(donation.status == "assigned" && donation.adminToAgentMsg) { %>
+              <div class="col-12">
+                <div class="meta">
+                  <div class="label">Admin → Agent Note</div>
+                  <div class="note alt"><%= donation.adminToAgentMsg %></div>
+                </div>
+              </div>
+              <% } %>
+              <% if(donation.feedback && donation.feedback.rating) { %>
+              <div class="col-12">
+                <div class="meta">
+                  <div class="label">Donor Feedback</div>
+                  <div class="feedback-box">
+                    <span class="stars">
+                      <% for(let s=1;s<=5;s++){ %>
+                        <i class="<%= s<=donation.feedback.rating ? 'fas' : 'far' %> fa-star"></i>
+                      <% } %>
+                    </span>
+                    <span class="ms-2 fw-semibold"><%= donation.feedback.rating %>/5</span>
+                    <% if(donation.feedback.comment){ %>
+                      <div class="mt-2 small text-muted"><%= donation.feedback.comment %></div>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+              <% } %>
+            </div>
+
+            <div class="actions mt-4">
+              <% if(donation.status == "pending") { %>
+                <a href="/admin/donation/accept/<%= donation._id %>" class="btn btn-success btn-sm"><i class="fas fa-check me-1"></i>Accept</a>
+                <a href="/admin/donation/reject/<%= donation._id %>" class="btn btn-danger btn-sm"><i class="fas fa-times me-1"></i>Reject</a>
+              <% } else if(donation.status == "accepted") { %>
+                <a href="/admin/donation/assign/<%= donation._id %>" class="btn btn-primary btn-sm"><i class="fas fa-user-plus me-1"></i>Assign Agent</a>
+              <% } %>
+              <a href="/admin/donations/pending" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left me-1"></i>Back</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel timeline-panel">
+          <div class="panel-head">
+            <h6 class="m-0 fw-semibold"><i class="fas fa-stream me-2 text-warning"></i>Timeline</h6>
+          </div>
+          <div class="panel-body">
+            <ul class="timeline list-unstyled m-0">
+              <li>
+                <div class="dot bg-primary"></div>
+                <div class="content">
+                  <div class="title">Created</div>
+                  <div class="time"><%= donation._id.getTimestamp ? donation._id.getTimestamp() : '' %></div>
+                </div>
+              </li>
+              <% if(['accepted','assigned','collected'].includes(donation.status)){ %>
+              <li>
+                <div class="dot bg-info"></div>
+                <div class="content">
+                  <div class="title">Accepted</div>
+                  <div class="time">Processed by admin</div>
+                </div>
+              </li>
+              <% } %>
+              <% if(['assigned','collected'].includes(donation.status)){ %>
+              <li>
+                <div class="dot bg-indigo"></div>
+                <div class="content">
+                  <div class="title">Agent Assigned</div>
+                  <div class="time"><%= donation.agent ? (donation.agent.firstName + ' ' + donation.agent.lastName) : '' %></div>
+                </div>
+              </li>
+              <% } %>
+              <% if(donation.status == 'collected'){ %>
+              <li>
+                <div class="dot bg-success"></div>
+                <div class="content">
+                  <div class="title">Collected</div>
+                  <div class="time"><%= donation.collectionTime.toLocaleString("en-IN",{ dateStyle:"medium", timeStyle:"short"}) %></div>
+                </div>
+              </li>
+              <% } %>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</main>
+
+<style>
+.admin-donation { background:#f3f6fb; min-height:100vh; }
+.top-bar { position:sticky; top:0; z-index:10; }
+.detail-grid { display:grid; gap:1.25rem; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); }
+.panel { background:#fff; border:1px solid #e5eaf1; border-radius:1rem; box-shadow:0 6px 18px -8px rgba(0,0,0,.08); }
+.panel-head { padding:.85rem 1.1rem; border-bottom:1px solid #eef2f6; background:linear-gradient(90deg,#f8fafc,#f1f5f9); border-radius:1rem 1rem 0 0; }
+.panel-body { padding:1.1rem 1.15rem 1.3rem; }
+.meta .label { font-size:.6rem; text-transform:uppercase; letter-spacing:.75px; font-weight:700; color:#6b7280; }
+.meta .value { font-weight:600; margin-top:.2rem; }
+.meta .value.small { font-weight:500; font-size:.75rem; color:#374151; }
+.pill { background:#eef5ff; color:#1d4ed8; padding:.4rem .7rem; border-radius:1.2rem; font-size:.65rem; font-weight:600; letter-spacing:.4px; }
+.qty { background:#fff; border:1px solid #d9e2ec; padding:.4rem .65rem; border-radius:.7rem; font-size:.65rem; font-weight:600; }
+.status-badge { display:inline-flex; align-items:center; gap:.35rem; padding:.35rem .7rem; font-size:.6rem; text-transform:uppercase; letter-spacing:1px; font-weight:700; border-radius:2rem; border:1px solid transparent; }
+.status-badge.pending { background:#fffbe6; color:#856404; border-color:#ffe58f; }
+.status-badge.accepted { background:#e0f2ff; color:#075985; border-color:#bae6fd; }
+.status-badge.assigned { background:#ede9fe; color:#5b21b6; border-color:#ddd6fe; }
+.status-badge.collected { background:#dcfce7; color:#065f46; border-color:#bbf7d0; }
+.note { background:#f1f5f9; padding:.75rem .85rem; border-radius:.7rem; font-size:.75rem; border:1px solid #e2e8f0; }
+.note.alt { background:#fff7ed; border-color:#ffedd5; }
+.feedback-box { background:#f8fafc; border:1px solid #e2e8f0; padding:.7rem .85rem; border-radius:.75rem; font-size:.75rem; display:inline-block; }
+.feedback-box .stars i { color:#f59e0b; font-size:.85rem; }
+.actions .btn { margin-right:.4rem; }
+.timeline { position:relative; }
+.timeline li { position:relative; padding-left:2.1rem; margin-bottom:1rem; }
+.timeline li:last-child { margin-bottom:0; }
+.timeline .dot { position:absolute; left:.4rem; top:.25rem; width:14px; height:14px; border-radius:50%; box-shadow:0 0 0 3px #fff; }
+.timeline .content .title { font-size:.7rem; text-transform:uppercase; font-weight:700; letter-spacing:.7px; margin-bottom:.1rem; }
+.timeline .content .time { font-size:.65rem; color:#64748b; }
+.bg-indigo { background:#6366f1!important; }
+</style>
