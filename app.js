@@ -10,15 +10,17 @@ const authRoutes = require("./routes/auth.js");
 const adminRoutes = require("./routes/admin.js");
 const donorRoutes = require("./routes/donor.js");
 const agentRoutes = require("./routes/agent.js");
+const path = require("path"); // Add this line
 require("dotenv").config();
 require("./config/dbConnection.js")();
 require("./config/passport.js")(passport);
 
 
 
+app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 app.use(expressLayouts);
-app.use("/assets", express.static(__dirname + "/assets"));
+app.use("/assets", express.static(path.join(__dirname, "assets")));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(session({
@@ -51,12 +53,23 @@ app.use(authRoutes);
 app.use(donorRoutes);
 app.use(adminRoutes);
 app.use(agentRoutes);
+
+// Update error handlers
 app.use((err, req, res, next) => {
   console.error(err.stack);
+  // Simplified error handling for production
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(500).send('Internal Server Error. Please try again later.');
+  }
   res.status(500).render("404page", { title: "Something went wrong" });
 });
-app.use((req,res) => {
-	res.status(404).render("404page", { title: "Page not found" });
+
+app.use((req, res) => {
+  // Simplified 404 handling for production
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(404).send('Page not found. Please check the URL and try again.');
+  }
+  res.status(404).render("404page", { title: "Page not found" });
 });
 
 
