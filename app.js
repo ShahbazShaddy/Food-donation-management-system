@@ -21,6 +21,12 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 app.use(expressLayouts);
 app.use("/assets", express.static(path.join(__dirname, "assets")));
+
+// With this:
+app.use("/assets", express.static(path.join(__dirname, "assets"), {
+  maxAge: '1d',
+  immutable: true
+}));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(session({
@@ -28,8 +34,9 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: {
-        // Only use secure cookies in production if using HTTPS
-        secure: process.env.NODE_ENV === 'production' && !!process.env.VERCEL,
+        // In Vercel production, don't force secure cookies as it handles HTTPS already
+        secure: false,
+        httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000 // 24 hours
     }
 }));
