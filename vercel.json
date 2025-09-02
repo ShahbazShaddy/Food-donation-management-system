@@ -9,12 +9,14 @@
   "routes": [
     {
       "src": "/assets/(.*)",
-      "dest": "/assets/$1"
+      "dest": "/assets/$1",
+      "headers": {
+        "cache-control": "public, max-age=86400"
+      }
     },
     {
       "src": "/(.*)",
       "dest": "/app.js"
     }
-  ],
-  "public": true
+  ]
 }
