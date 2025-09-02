@@ -26,7 +26,8 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: process.env.NODE_ENV === 'production',
+        // Only use secure cookies in production if using HTTPS
+        secure: process.env.NODE_ENV === 'production' && !!process.env.VERCEL,
         maxAge: 24 * 60 * 60 * 1000 // 24 hours
     }
 }));
@@ -50,6 +51,10 @@ app.use(authRoutes);
 app.use(donorRoutes);
 app.use(adminRoutes);
 app.use(agentRoutes);
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).render("404page", { title: "Something went wrong" });
+});
 app.use((req,res) => {
 	res.status(404).render("404page", { title: "Page not found" });
 });

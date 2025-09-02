@@ -1,17 +1,19 @@
 const mongoose = require("mongoose");
 
-const connectDB = async() => {
-	try
-	{
-		const db = process.env.MONGO_URI;
-		await mongoose.connect(db);
-		console.log("MongoDB connected...");
-	}
-	catch(err)
-	{
-		console.log(err);
-		process.exit(1);
-	}
-}
-
-module.exports = connectDB;
+module.exports = async function connectDB() {
+  try {
+    mongoose.set('strictQuery', false);
+    const connectionParams = {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    };
+    
+    await mongoose.connect(process.env.MONGO_URI, connectionParams);
+    console.log("Connected to database successfully");
+  } catch (error) {
+    console.log("Could not connect to database:", error);
+    
+    // Don't crash the serverless function
+    // Instead, allow the app to continue and handle DB errors gracefully
+  }
+};
