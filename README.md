@@ -117,8 +117,3 @@ For running the application:
 - Github docs: https://docs.github.com/en/get-started/quickstart/hello-world
 - Git cheatsheet: https://education.github.com/git-cheat-sheet-education.pdf
 - VS Code keyboard shortcuts: https://code.visualstudio.com/shortcuts/keyboard-shortcuts-windows.pdf
-
-## Contact
-
-- Email: aayush5521186@gmail.com
-- Linkedin: https://www.linkedin.com/in/aayush12/
